@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星火拓荒 · 无尽之地</title>
+<link rel="stylesheet" href="css/style.css?v=1006">
+</head>
+<body>
+<div id="game">
+  <canvas id="cv"></canvas>
+
+  <!-- 顶部 HUD -->
+  <div id="hudTop">
+    <div id="vitals">
+      <div class="bar"><span class="blabel">生命</span><div class="btrack"><div id="hpFill" class="bfill hp"></div></div><span id="hpText" class="btext"></span></div>
+      <div class="bar"><span class="blabel">饱食</span><div class="btrack"><div id="hgFill" class="bfill hg"></div></div><span id="hgText" class="btext"></span></div>
+    </div>
+    <div id="clockBox">
+      <div id="dayText">第 1 天</div>
+      <div id="timeText">☀ 08:00</div>
+    </div>
+    <div id="resBox">
+      <div id="storageLine"><span id="storageText">仓储 0/150</span><div class="btrack tiny"><div id="stFill" class="bfill st"></div></div></div>
+      <div id="resChips"></div>
+    </div>
+  </div>
+
+  <!-- 事件横幅 -->
+  <div id="banner"></div>
+
+  <!-- 左下消息日志 -->
+  <div id="log"></div>
+
+  <!-- 右下:小地图 + 主按钮 -->
+  <div id="miniWrap">
+    <canvas id="mini" width="164" height="164"></canvas>
+    <div id="mainBtns">
+      <button class="mbtn" id="btnBuild">建造(B)</button>
+      <button class="mbtn" id="btnTech">科技(T)</button>
+      <button class="mbtn" id="btnRecruit" title="在篝火处招募一名拓荒者">招募工人</button>
+      <button class="mbtn" id="btnHelp">帮助(H)</button>
+      <button class="mbtn small" id="btnSave">保存</button>
+      <button class="mbtn small" id="btnLoad">读档</button>
+      <button class="mbtn small" id="btnSound">音效:开</button>
+      <button class="mbtn small" id="btnMenu">主菜单</button>
+    </div>
+  </div>
+
+  <!-- 面板 -->
+  <div id="buildPanel" class="panel hidden">
+    <div class="phead"><span>建造</span><span class="hint">左键放置 · 右键/Esc 取消 · 右键点击方块可弹出快捷建造 · 框选右键标记采集</span><button class="pclose">×</button></div>
+    <div id="buildGrid"></div>
+  </div>
+
+  <div id="techPanel" class="panel hidden">
+    <div class="phead"><span>科技树</span><span class="hint">科研点:工作台/实验室产出</span><button class="pclose">×</button></div>
+    <div id="techRp">科研点:0</div>
+    <div id="techList"></div>
+  </div>
+
+  <div id="infoPanel" class="panel hidden">
+    <div class="phead"><span id="infoTitle">详情</span><button class="pclose">×</button></div>
+    <div id="infoBody"></div>
+  </div>
+
+  <!-- 右键方块弹出的快捷建造菜单 -->
+  <div id="buildMenu" class="hidden">
+    <div class="bmhead"><span id="bmTitle">快捷建造</span><button class="pclose" id="bmClose">×</button></div>
+    <div id="bmGrid"></div>
+    <div id="bmHint" class="bmhint"></div>
+  </div>
+
+  <!-- 悬浮提示 -->
+  <div id="tooltip" class="hidden"></div>
+
+  <!-- 暂停标记 -->
+  <div id="pauseTag" class="hidden">⏸ 已暂停(空格继续)</div>
+
+  <!-- 游戏指南 -->
+  <div id="help" class="overlay hidden">
+    <div class="obox guidebox">
+      <h2 class="gtitle">📖 星火拓荒 · 游戏指南</h2>
+      <div class="gtabs">
+        <button class="gtab active" data-tab="goal">🎯 游戏目标</button>
+        <button class="gtab" data-tab="flow">🚀 新手流程</button>
+        <button class="gtab" data-tab="build">🏗️ 建筑与自动化</button>
+        <button class="gtab" data-tab="night">🌙 生存与防御</button>
+        <button class="gtab" data-tab="keys">⌨️ 操作键位</button>
+      </div>
+      <div class="gbody">
+        <div class="gpage active" data-page="goal">
+          <p class="glead">你是坠落无尽之地的拓荒者。这片大陆没有边界——山川矿脉都由世界种子程序生成,每一局都是新大陆。</p>
+          <ul>
+            <li><b>终极目标</b>:发展营地、攒够 <b>铁锭×100 + 水晶×50 + 石头×100</b>,建成并点亮<b>星界信标</b>,赢得这局拓荒。</li>
+            <li>在那之前,先活下去:盯紧左上角的<b>饱食度</b>,提防夜晚从黑暗中涌出的<b>蚀影兽</b>。</li>
+            <li>不必怕失败——存档每 60 秒自动写入浏览器,随时读档重来。</li>
+          </ul>
+        </div>
+        <div class="gpage" data-page="flow">
+          <ol class="gsteps">
+            <li><b>采集</b>:左键点击身旁的<b>树木、岩石</b>,拓荒者会自动走过去砍伐,资源直接入仓。</li>
+            <li><b>造篝火</b>:按 <kbd>B</kbd> 打开建造面板,先造<b>篝火</b>(木头×5)——它是营地的核心、夜晚的庇护所,也是招募工人的前提。</li>
+            <li><b>造仓储堆</b>:初始仓储只有 150,每座仓储堆 +250,尽早补上。</li>
+            <li><b>标记资源</b>:按住<b>鼠标右键</b>框选树木矿脉,插上小旗子后工人就会来采。</li>
+            <li><b>招募工人</b>:点右下角「招募工人」(浆果×8 + 木头×15)。他们会自动采集、施工、耕种、搬运——你的营地开始自己运转。</li>
+            <li><b>科研</b>:造<b>工作台</b>持续产出科研点,按 <kbd>T</kbd> 打开科技树,解锁冶炼、炮塔与自动化。</li>
+            <li><b>做大</b>:矿脉上放<b>自动采矿机</b>,后期建<b>无人机站</b>——就算挂机,资源也会自己流进仓库。</li>
+          </ol>
+        </div>
+        <div class="gpage" data-page="build">
+          <ul>
+            <li><b>食物链</b>:农田产小麦 → 厨房把小麦×3 烤成<b>面包</b>(食物+60);浆果只能应急。</li>
+            <li><b>冶炼</b>:冶炼炉消耗 铁矿石×2 + 煤×1 炼出<b>铁锭</b>——炮塔、采矿机、无人机站、信标全都要它。</li>
+            <li><b>工人操作</b>:工人会自动站上工作岗位,把工作台/厨房/冶炼炉的效率提到 <b>×2.2</b>,实验室 ×2。</li>
+            <li><b>自动采矿机</b>:必须直接放置在<b>矿脉</b>上,采完下方的矿就停机,记得挪窝。</li>
+            <li><b>无人机站</b>:每站自带 2 架无人机,无视地形飞行采集,优先飞向已标记的资源。</li>
+            <li><b>快捷建造</b>:<b>右键点击</b>任意空地/水面外的方块,会直接弹出该格<b>能建什么</b>,点一下就立刻开工——不必再开建造面板。</li>
+            <li><b>拆除</b>:左键点击已建成的建筑可查看详情并拆除,返还一半造价。</li>
+          </ul>
+        </div>
+        <div class="gpage" data-page="night">
+          <ul>
+            <li><b>昼夜</b>:一昼夜约 3 分半。日落时天色变暗,蚀影兽成群从黑暗中涌出,撕咬工人和建筑。</li>
+            <li><b>火光庇护</b>:蚀影兽<b>惧怕火光</b>——篝火和火把的光圈会持续灼烧它们。天黑后待在火光范围内最安全。</li>
+            <li><b>防御工事</b>:木墙能挡住兽群(记得留出入口),<b>弩炮塔</b>会自动射击视野内的敌人;工人血量过半会自己逃回篝火。</li>
+            <li><b>进食</b>:饥饿归零会持续掉血。按 <kbd>E</kbd> 立即进食;工人饿了会自己去仓储取食物。</li>
+            <li><b>随机事件</b>:丰润之雨让农田疯长、矿脉涌动送来富集矿、神秘旅者留下科研笔记——留意顶部横幅,抓住每个机会。</li>
+          </ul>
+        </div>
+        <div class="gpage" data-page="keys">
+          <table class="keys">
+            <tr><td>W A S D / 方向键</td><td>移动</td></tr>
+            <tr><td>鼠标左键</td><td>采集 / 攻击 / 锤击施工中蓝图 / 选中建筑</td></tr>
+            <tr><td>右键点击方块</td><td><b>弹出快捷建造菜单</b>,点一下即可在该格开工</td></tr>
+            <tr><td>右键框选</td><td>标记 / 取消资源,派工人自动采集</td></tr>
+            <tr><td>B / T / H</td><td>建造面板 / 科技树 / 本指南</td></tr>
+            <tr><td>E</td><td>立即进食(消耗仓储食物)</td></tr>
+            <tr><td>滚轮</td><td>缩放视野</td></tr>
+            <tr><td>空格</td><td>暂停</td></tr>
+            <tr><td>F5 / F9</td><td>快速保存 / 读档</td></tr>
+          </table>
+        </div>
+      </div>
+      <button class="bigbtn" id="helpClose">知道了,开始拓荒!</button>
+    </div>
+  </div>
+
+  <!-- 标题界面 -->
+  <div id="titleScreen" class="overlay">
+    <div class="obox titlebox">
+      <h1>星火拓荒</h1>
+      <div class="subtitle">无 尽 之 地 · 生存建造</div>
+      <p class="tinfo">程序化无限大陆 · 科技树 · 自动化工厂 · 昼夜与事件</p>
+      <div class="seedrow">世界种子:<input id="seedInput" placeholder="留空则随机"></div>
+      <button class="bigbtn" id="btnNew">▶ 开始新旅程</button>
+      <button class="bigbtn ghost hidden" id="btnContinue">⟳ 继续上次旅程</button>
+      <button class="bigbtn ghost" id="btnTitleHelp">📖 游戏说明 · 新手必读</button>
+    </div>
+  </div>
+
+  <!-- 结束界面 -->
+  <div id="gameover" class="overlay hidden">
+    <div class="obox">
+      <h1 class="bad">你倒在了荒野中……</h1>
+      <p id="goStats"></p>
+      <button class="bigbtn" id="goLoad">读取存档</button>
+      <button class="bigbtn ghost" id="goNew">重新开始</button>
+    </div>
+  </div>
+
+  <div id="victory" class="overlay hidden">
+    <div class="obox">
+      <h1 class="good">✦ 星界信标已点亮 ✦</h1>
+      <p id="vcStats"></p>
+      <p>无尽之地的夜空第一次被火光刺穿。生存仍在继续——大陆没有边界。</p>
+      <button class="bigbtn" id="vcContinue">继续经营基地</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/core.js?v=1006"></script>
+<script src="js/data.js?v=1006"></script>
+<script src="js/world.js?v=1006"></script>
+<script src="js/actors.js?v=1006"></script>
+<script src="js/buildings.js?v=1006"></script>
+<script src="js/systems.js?v=1006"></script>
+<script src="js/render.js?v=1006"></script>
+<script src="js/ui.js?v=1006"></script>
+<script src="js/save.js?v=1006"></script>
+<script src="js/main.js?v=1006"></script>
+</body>
+</html>

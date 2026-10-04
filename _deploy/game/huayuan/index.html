@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>情绪花园 · Emotion Garden</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="garden"></canvas>
+<div id="grain"></div>
+
+<div id="hud">
+  <!-- 顶部状态 -->
+  <div id="topbar">
+    <div class="chip">🌸 <span id="gname">秘密花园</span></div>
+    <div class="chip">Lv.<b id="lv">1</b><span class="expbar"><i id="expfill"></i></span></div>
+    <div class="chip">💠 <b id="crystals">0</b></div>
+    <div id="eco-chips">
+      <div class="eco-mini"><b>日照 50</b><div class="bar"><i id="eco-sun"></i></div></div>
+      <div class="eco-mini"><b>湿度 50</b><div class="bar"><i id="eco-hum"></i></div></div>
+      <div class="eco-mini"><b>肥力 50</b><div class="bar"><i id="eco-fer"></i></div></div>
+      <div class="eco-mini"><b>和谐 50</b><div class="bar"><i id="eco-har"></i></div></div>
+    </div>
+    <button id="btn-sound" title="声音开关">🔊</button>
+  </div>
+
+  <!-- 四角折叠菜单：图鉴 / 商店 / 日志 / 设置 -->
+  <button class="corner-btn" id="btn-dex"><span class="ico">📖</span><span class="lbl">图鉴</span></button>
+  <button class="corner-btn" id="btn-shop"><span class="ico">🛒</span><span class="lbl">商店</span></button>
+  <button class="corner-btn" id="btn-diary"><span class="ico">📔</span><span class="lbl">日志</span></button>
+  <button class="corner-btn" id="btn-setting"><span class="ico">⚙️</span><span class="lbl">设置</span></button>
+
+  <!-- 底部工具条：种植 / 照料 / 收获 / 分享 -->
+  <div id="toolbar">
+    <button class="tool-btn" data-tool="plant" id="tool-plant">🌱 种植</button>
+    <button class="tool-btn" data-tool="care" id="tool-care">🤲 照料</button>
+    <button class="tool-btn" data-tool="harvest" id="tool-harvest">🌸 收获</button>
+    <button class="tool-btn" data-tool="share" id="tool-share">📷 分享</button>
+  </div>
+  <div id="tool-hint"></div>
+</div>
+
+<!-- 照料面板 -->
+<div id="care-panel"></div>
+
+<!-- 冥想模式 -->
+<div id="meditation">
+  <canvas id="med-canvas"></canvas>
+  <div id="med-text">吸气……</div>
+  <button id="med-exit">结束冥想 · 回到花园</button>
+</div>
+
+<!-- 弹窗 / 提示 -->
+<div id="toast-wrap"></div>
+
+<script src="js/data.js"></script>
+<script src="js/emotion.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/plantgen.js"></script>
+<script src="js/garden.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

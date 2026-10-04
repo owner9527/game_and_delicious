@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>时间碎片 Time Shards</title>
+<meta name="description" content="同时操控过去、现在、未来三条时间线，重排因果链的碎片化非线性叙事解谜游戏">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>">
+<link rel="stylesheet" href="css/style.css?v=1.1">
+</head>
+<body>
+<div id="app">
+
+  <!-- 背景层：程序化时间天幕（静态全景 canvas + 低分辨率动态柔光 canvas）→ 齿轮 → 后处理暗角 -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <canvas id="bg-fx" aria-hidden="true"></canvas>
+  <div id="bg-gears" aria-hidden="true"></div>
+  <div id="grade-layer" aria-hidden="true"></div>
+  <div id="fx-layer" aria-hidden="true"><canvas id="fx-canvas" aria-hidden="true"></canvas></div>
+  <div id="storm-overlay" aria-hidden="true"></div>
+
+  <!-- ============ 启动页 ============ -->
+  <section id="screen-boot" class="screen">
+    <div class="boot-clock">
+      <div class="boot-dial"><span class="boot-hand"></span></div>
+      <h1 class="boot-title">时间碎片</h1>
+      <p class="boot-sub">TIME SHARDS · 三线并行因果解谜</p>
+      <button id="btn-boot-start" class="btn btn-primary btn-lg">上 发 条</button>
+      <p class="boot-tip">建议佩戴耳机 · 首次进入将开始新手引导</p>
+    </div>
+  </section>
+
+  <!-- ============ 主菜单 ============ -->
+  <section id="screen-menu" class="screen hidden">
+    <div class="menu-wrap">
+      <h1 class="menu-title">时间碎片</h1>
+      <p class="menu-tagline" id="menu-tagline">如果过去可以被重构，此刻的选择还意味着什么？</p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary btn-lg" data-nav="chapterselect">继续调查</button>
+        <button class="btn" data-nav="lab">悖论实验室 <small>每日谜题</small></button>
+        <button class="btn" data-nav="endless">无限回环 <small>无尽模式</small></button>
+        <button class="btn" data-nav="rift">时间裂隙 <small>周常活动</small></button>
+        <div class="menu-row">
+          <button class="btn btn-sm" data-nav="archive">记忆档案馆</button>
+          <button class="btn btn-sm" data-nav="achievements">成就</button>
+          <button class="btn btn-sm" data-nav="shop">时之铺</button>
+          <button class="btn btn-sm" data-nav="help">📖 游戏说明</button>
+          <button class="btn btn-sm" data-nav="settings">设置</button>
+        </div>
+      </div>
+      <div class="menu-status">
+        <span id="menu-stardust">✦ 0</span>
+        <span id="menu-shards">🧩 0/0</span>
+        <span id="menu-progress">进度 0%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 章节选择（时间档案馆） ============ -->
+  <section id="screen-chapterselect" class="screen hidden">
+    <header class="screen-head"><button class="btn-back" data-nav="menu">‹</button><h2>时间档案馆</h2><span class="head-right" id="chapter-dust">✦ 0</span></header>
+    <div id="chapter-list" class="chapter-list"></div>
+  </section>
+
+  <!-- ============ 关卡选择 ============ -->
+  <section id="screen-levelselect" class="screen hidden">
+    <header class="screen-head"><button class="btn-back" data-nav="chapterselect">‹</button><h2 id="level-title">第 1 章</h2><span class="head-right" id="level-summary"></span></header>
+    <p id="chapter-intro" class="chapter-intro"></p>
+    <div id="level-grid" class="level-grid"></div>
+    <div id="chapter-ending-box" class="chapter-ending-box hidden"></div>
+  </section>
+
+  <!-- ============ 游戏 ============ -->
+  <section id="screen-game" class="screen hidden">
+    <header id="game-hud">
+      <button class="btn-icon" id="btn-pause" title="暂停/菜单">☰</button>
+      <div class="hud-mid">
+        <div id="hud-goal" class="hud-goal"></div>
+        <div class="hud-meters">
+          <div class="meter"><label>时间完整度</label><div class="meter-bar"><i id="meter-integrity"></i></div><b id="meter-integrity-num">100</b></div>
+          <div class="meter"><label>操作步数</label><div class="meter-bar steps"><i id="meter-steps"></i></div><b id="meter-steps-num">0/0</b></div>
+        </div>
+      </div>
+      <div class="hud-right">
+        <span id="hud-track-badge" class="track-badge">过去</span>
+        <button class="btn-icon" id="btn-undo" title="撤销 (Q)">↶</button>
+        <button class="btn-icon" id="btn-redo" title="重做 (E)">↷</button>
+        <button class="btn-icon" id="btn-graph" title="因果星图">✦图</button>
+      </div>
+    </header>
+
+    <main id="board">
+      <!-- 三条时间线轨道由 JS 渲染 -->
+    </main>
+
+    <footer id="dock">
+      <div id="shard-bag" class="shard-bag"><span class="bag-label">碎片背包</span><div id="bag-items"></div></div>
+      <div id="item-bar" class="item-bar"><span class="bag-label">道具</span><div id="item-items"></div></div>
+    </footer>
+
+    <div id="hint-bubble" class="hint-bubble hidden"></div>
+    <div id="preview-pop" class="preview-pop hidden"></div>
+  </section>
+
+  <!-- ============ 因果星图覆盖层 ============ -->
+  <div id="graph-overlay" class="overlay hidden">
+    <header class="overlay-head"><h3>因果星图</h3>
+      <div class="overlay-tools">
+        <button class="btn btn-sm" id="graph-zoom-in">＋</button>
+        <button class="btn btn-sm" id="graph-zoom-out">－</button>
+        <button class="btn btn-sm" id="graph-fit">适配</button>
+      </div>
+      <button class="btn-icon overlay-close" data-close="graph-overlay">✕</button>
+    </header>
+    <canvas id="graph-canvas"></canvas>
+    <p class="graph-legend"><i class="lg lg-past"></i>过去 <i class="lg lg-now"></i>现在 <i class="lg lg-future"></i>未来 <i class="lg lg-goal"></i>关键节点 <i class="lg lg-para"></i>悖论冲突</p>
+  </div>
+
+  <!-- ============ 结算页 ============ -->
+  <div id="settle-overlay" class="overlay hidden">
+    <div class="settle-card">
+      <div class="settle-stars"><span id="star1" class="star">★</span><span id="star2" class="star">★</span><span id="star3" class="star">★</span></div>
+      <h3 id="settle-title">因果重构完成</h3>
+      <div id="settle-breakdown" class="settle-breakdown"></div>
+      <div id="settle-shards" class="settle-shards"></div>
+      <div id="settle-end" class="settle-end"></div>
+      <div class="settle-actions">
+        <button class="btn" id="btn-settle-retry">重试</button>
+        <button class="btn" id="btn-settle-share">分享卡</button>
+        <button class="btn btn-primary" id="btn-settle-next">下一关 ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 失败/暂停/通用弹窗 ============ -->
+  <div id="modal-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- ============ 碎片阅读器 ============ -->
+  <div id="reader-overlay" class="overlay hidden">
+    <div class="reader-card">
+      <button class="btn-icon overlay-close" data-close="reader-overlay">✕</button>
+      <div id="reader-kind" class="reader-kind">日记</div>
+      <h3 id="reader-title"></h3>
+      <div id="reader-text" class="reader-text"></div>
+      <div id="reader-nav" class="reader-nav">
+        <button class="btn btn-sm" id="reader-prev">‹ 上一片</button>
+        <span id="reader-index"></span>
+        <button class="btn btn-sm" id="reader-next">下一片 ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 通用列表页（成就/档案馆/时之铺/设置/结局画廊） ============ -->
+  <section id="screen-list" class="screen hidden">
+    <header class="screen-head"><button class="btn-back" data-nav="menu">‹</button><h2 id="list-title"></h2><span class="head-right" id="list-extra"></span></header>
+    <div id="list-body" class="list-body"></div>
+  </section>
+
+  <!-- ============ toast ============ -->
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<script src="js/engine.js?v=1.1"></script>
+<script src="js/data_levels.js?v=1.1"></script>
+<script src="js/data_levels_b.js?v=1.1"></script>
+<script src="js/data_story.js?v=1.1"></script>
+<script src="js/audio.js?v=1.1"></script>
+<script src="js/ui.js?v=1.1"></script>
+<script src="js/main.js?v=1.1"></script>
+</body>
+</html>

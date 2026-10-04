@@ -1,0 +1,83 @@
+{
+  "metro": [
+    "p_start",
+    "p_radio",
+    "p_pack",
+    "f_radio_ask",
+    "f_radio2",
+    "f_noradio",
+    "f_seats",
+    "e04"
+  ],
+  "gate": [
+    "p_leave"
+  ],
+  "street_rain": [
+    "s1",
+    "s_yu_leave"
+  ],
+  "store": [
+    "s_shop",
+    "s_oldman",
+    "s_shop2"
+  ],
+  "alley": [
+    "s_alley",
+    "s_stealth",
+    "s_talk",
+    "e07"
+  ],
+  "rooftop": [
+    "s2",
+    "s_yu1",
+    "s_yu2",
+    "s_yu3",
+    "s_yu_join",
+    "s_yu_night"
+  ],
+  "hospital_out": [
+    "s3"
+  ],
+  "lobby": [
+    "h_front",
+    "h_lobby",
+    "h_journal"
+  ],
+  "garage": [
+    "h_garage",
+    "e08"
+  ],
+  "ward": [
+    "h_vent",
+    "h_ward"
+  ],
+  "lab": [
+    "h_pharm",
+    "h_lab",
+    "h_deal",
+    "h_fight",
+    "h_escape",
+    "e10"
+  ],
+  "metro_night": [
+    "f1",
+    "e09"
+  ],
+  "street_night": [
+    "f_find",
+    "f_back"
+  ],
+  "dawn": [
+    "f_dawn",
+    "e01",
+    "e02",
+    "e03",
+    "e05"
+  ],
+  "fate": [
+    "f_fate"
+  ],
+  "rooftop_night": [
+    "e06"
+  ]
+}

@@ -1,0 +1,148 @@
+=== D:\游戏\3\js\ui.js  bytes=48547  U+FFFD=264
+  L1: ?// ===== 界面系统:HUD、建造面板、信息面板、弹窗、交�?=====
+  L15:   // ---------- 初始�?----------
+  L23:       if (G.SV.hasAny()) modalConfirm('读取存档', '读取上次保存的进�?当前未保存的进度将丢失�?, () => G.SV.loadLatest());
+  L27:       modalConfirm('新游�?, '开始新的领�?当前进度将丢�?可先保存)�?, showStart);
+  L32:       modalConfirm(`晋升�?{next.name}」`,
+  L33:         `花费 <b>${next.cost} 金币</b> 颁布敕令,晋升为�?{next.name}」�?br>将解锁新阶级的建筑与外环领地。`, () => {
+  L67:         toast(el.checked ? '�?重大事件将自动暂�? : '重大事件不再自动暂停', 'info');
+  L107:   // ---------- 建造面�?----------
+  L146:         if (el.classList.contains('locked')) { toast(`需要达到�?{G.CFG.STAGES[def.stage - 1].name}」阶段`, 'bad'); return; }
+  L168:     if (tool.mode !== 'select') return; // 放置/拆除�?paintAt 处理
+  L169:     // 先看有没有点到居�?—�?点一下就能知�?这个人是谁、正在干�?
+  L191:   // ---------- 悬停提示(#tooltip 原本只写�?CSS,没有任何 JS 使用) ----------
+  L210:         + `<div class="tt-dim">点击可查看完整需�?/div>`;
+  L223:         if (d.service) lines += `<div class="tt-dim">${G.CFG.NEEDS[d.service.need].name} ${b.servedToday}/${Math.round(d.service.cap * b.eff)} 人次/�?/div>`;
+  L232:             + `<div class="tt-dim">四季生长 ${nd.rate.join(' / ')} �?�?越接近上限长得越�?</div>`
+  L233:             + `<div class="tt-dim">邻近的生产建筑会从这里取�?/div>`;
+  L264:         if (b.def.key === 'hall') { toast('市政厅不可拆�?, 'bad'); return; }
+  L272:   // 库存涨落动画:数字变化时给对应资源条打一次绿/红闪,�?收入到底有没有进�?一眼可�?
+  L296:     G.U.$('chip-date').innerHTML = `${season.icon} ${season.name}${G.sim.dayOfSeason()}�?· ${G.sim.year()}�?· �?{s.day}天`;
+  L298:     G.U.$('chip-wood').innerHTML = `🪵 <b>${G.U.fmt(s.wood)}</b>/${G.U.fmt(s.caps.wood)}${ov.wood > 1 ? ' �? : ''}`;
+  L299:     G.U.$('chip-stone').innerHTML = `🪨 <b>${G.U.fmt(s.stone)}</b>/${G.U.fmt(s.caps.stone)}${ov.stone > 1 ? ' �? : ''}`;
+  L300:     foodEl.innerHTML = `🌾 <b>${G.U.fmt(s.food)}</b>/${G.U.fmt(s.caps.food)}${ov.food > 1 ? ' �? : ''}`;
+  L305:     // 资源条涨落动�?悬浮时也能看到昨日产�?
+  L317:     G.U.$('chip-food').title = `粮食 · 昨日产出+${(prod.food || 0).toFixed(1)} · 昨日消�?${(G.res.length * G.CFG.ECON.foodPer).toFixed(0)}`;
+  L323:       bs.textContent = `�?晋升${ready.name}(${ready.cost}�?`;
+  L334:     if (homeless > 0) arr.push(`🚫 ${homeless} 人无家可�?快建住房!`);
+  L335:     if (n > 0 && G.sim.state.food < n * 3) arr.push('🍞 粮食储备不足 3 �?抓紧开垦农�?');
+  L338:     if (sick > 0) arr.push(`⚕️ ${sick} 人患�?需要医疗覆�?`);
+  L339:     for (const e of G.EV.list()) if (e.days > 1) arr.push(`${e.icon} ${e.name}进行�?�?${e.days} �?`);
+  L347:     // 选中的居民可能已经离�?迁出
+  L355:   // 进度�?渐变填充 + 高光(外框/内阴�?圆角�?style.css �?
+  L372:       return `<h3>🕯�?未解锁领�?/h3>
+  L383:         <div class="dim">左侧选择建筑进行建�?道路可按住拖动连�?<br>右键�?ESC 取消工具�?/div>
+  L386:         <div class="row"><span class="k">建筑�?/span><span class="v">${G.builds.length}</span></div>
+  L388:         <div class="row"><span class="k">维护�?/span><span class="v">💰 ${Math.round(G.sim.state.lastUpkeep)}</span></div>`;
+  L414:           html += `<div class="row"><span class="k">毗邻森林(放置�?</span><span class="v">${b.forest} �?/span></div>`;
+  L415:           html += `<div class="row"><span class="k">林地健康度折�?/span><span class="v ${eq > 3 ? 'good' : 'warn'}">${eq.toFixed(1)} / 8 �?/span></div>`;
+  L421:       if (b.outNote) html += `<div class="bad">�?${G.U.esc(b.outNote)}</div>`;
+  L422:       else if (b.eff <= 0) html += `<div class="bad">�?无人上工,已经停产(建住房增加人�?</div>`;
+  L429:           <div class="row"><span class="k">资源�?/span><span class="v">${info.tiles} �?/span></div>
+  L432:           <div class="dim">${nd.icon} ${nd.name}按季节生�?${nd.rate.join('/')} �?�?,采伐后会自己长回来�?/div>`;
+  L436:         if (ov[k] > 1) html += `<div class="bad">📦 ${k === 'wood' ? '木材' : k === 'stone' ? '石料' : '粮食'}仓储已满,昨日浪费 ${ov[k].toFixed(1)}(建谷�?仓库提高上限)</div>`;
+  L441:         <div class="row"><span class="k">覆盖半径</span><span class="v">${d.service.radius} �?沿路)</span></div>`;
+  L442:       if (b.eff <= 0) html += `<div class="bad">�?缺少员工,无法提供服务</div>`;
+  L443:       if (!G.P.connected(b)) html += `<div class="bad">�?未毗邻道�?居民无法到达!</div>`;
+  L451:     if (d.upkeep) html += `<div class="row"><span class="k">维护�?/span><span class="v">💰 ${d.upkeep}/�?/span></div>`;
+  L452:     html += d.noBuild ? '' : `<button class="panel-btn" data-action="demolish">💥 拆除(返还一�?</button>`;
+  L456:   // 居民详情:职业 + 当前任务 + 需�?玩家反馈"人为什么这么多人跑来跑去干�?)
+  L460:     const meta = G.R.PURPOSE_META[t.key] || { icon: '�?, label: t.key };
+  L462:       <div class="dim">职业:${G.U.esc(G.R.jobNameOf(r))} · 于第 ${r.joinedDay || 1} 天加�?/div>
+  L463:       <h4>正在做什�?/h4>
+  L464:       <div class="row"><span class="k">当前状�?/span><span class="v">${t.icon} ${G.U.esc(t.text)}</span></div>
+  L466:       <div class="row"><span class="k">所�?/ 去处</span><span class="v">${G.U.esc(G.R.whereOf(r))}</span></div>
+  L467:       <div class="row"><span class="k">幸福�?/span><span class="v ${r.hap >= 60 ? 'good' : r.hap < 35 ? 'bad' : ''}">${Math.round(r.hap)}%</span></div>
+  L475:     html += `<div class="dim" style="margin-top:8px">地图上这名居民头顶有 �?目的标记(�?上班 / �?去酒馆教�?/ �?散步)。点击建筑可取消选中�?/div>`;
+  L489:     let html = `<h3>🏙�?城市概览</h3>
+  L492:       <div class="row"><span class="k">就业(健康�?</span><span class="v">${employed} / ${G.res.filter(r => !r.sick).length}</span></div>
+  L493:       <div class="row"><span class="k">患�?/ 饥饿</span><span class="v ${G.R.sickCount() ? 'bad' : ''}">${G.R.sickCount()} / <span class="${G.R.hungries() ? 'bad' : ''}">${G.R.hungries()}</span></span></div>
+  L503:       <div class="row"><span class="k">�?信仰</span><span class="v ${cov('faith') < 70 ? 'warn' : ''}">${cov('faith')}%</span></div>`;
+  L505:     // ---- 昨日产出(�?基建到底有没有收�?一目了�? ----
+  L511:       <div class="row"><span class="k">🌾 粮食</span><span class="v ${prod.food >= G.res.length ? 'good' : 'bad'}">+${prod.food.toFixed(1)} / 消�?-${G.res.length}</span></div>
+  L515:       html += `<div class="bad">�?${stalled.map(b => b.def.name).join('�?)} 无人上工已停�?人口不足,先建住房)</div>`;
+  L518:     // ---- 自然资源:可再�?+ 可感�?只统计已解锁领地) ----
+  L521:       html += `<h4>可再生资�?span class="dim">(已解锁领地内)</span></h4>`;
+  L526:           <span class="v ${v.net >= 0 ? 'good' : 'bad'}">${Math.round(v.total)} / ${Math.round(v.cap)}(${netStr}/�?</span></div>
+  L530:       html += `<div class="dim">森林/矿脉会被采空,但会按季节自己长回来;�?40 天还有一次矿脉勘探刷新。解锁新领地后这里的数字会重新统计�?/div>`;
+  L538:       <div class="row"><span class="k">人口硬上�?/span><span class="v">${ECON.popCap}</span></div>
+  L539:       <div class="row"><span class="k">本日最多新�?/span><span class="v">${growCap} �?/span></div>`;
+  L545:     html += `<h4>节奏与提�?/h4>
+  L546:       <div class="row"><span class="k">当前速度</span><span class="v">${speedLabel(G.sim.speed || 0)} · 一�?${(G.CFG.ECON.dayMs / 1000).toFixed(1)} �?/span></div>
+  L547:       <label class="chk-row"><input type="checkbox" data-setting="autopause" ${autoPauseOnEvent() ? 'checked' : ''}> 重大事件(瘟疫/火灾/盗匪)自动暂停,让我看清发生了什�?/label>`;
+  L552:     return v === 0 ? '�?暂停' : '�?.repeat(Math.min(3, v)) + ' ' + v + 'x';
+  L562:       html += `<div class="obj-item ${cls}">${i < s.objIdx ? '�? : i === s.objIdx ? '�? : '·'} ${objs[i].text}</div>`;
+  L568:       html += `<button class="panel-btn" data-action="stageup">�?晋升�?{next.name}�?💰${next.cost})</button>`;
+  L571:       html += `<div class="dim">下一阶段�?{nx.name}�?${nx.reqText},且金�?�?${nx.cost}</div>
+  L573:         <div class="row"><span class="k">幸福�?/span><span class="v ${Math.round(G.sim.hap()) >= nx.req.hap ? 'good' : 'bad'}">${Math.round(G.sim.hap())}/${nx.req.hap}</span></div>
+  L577:       html += `<div class="good">已达到最高阶�?/div>`;
+  L579:     html += `<h4>领地</h4><div class="dim">已解�?${G.M.openCount()}/9 个区块。点击地图上暗色区块可查看解锁条件�?/div>`;
+  L597:     if (s.stage < cost.stage) { toast(`需要达到�?{G.CFG.STAGES[cost.stage - 1].name}」阶段`, 'bad'); return; }
+  L601:     toast(`🗺�?领地扩展!区块 (${zx}, ${zy}) 已解锁`, 'good');
+  L602:     log(`解锁了区�?(${zx}, ${zy}) 的新领地`, 'good');
+  L645:       title: '�?游戏说明 1/6 · 你的目标',
+  L646:       html: `你是拓荒队的<b>造物�?/b>。带领居民在蛮荒大陆上选址安家,
+  L647:         把一座小村落逐步经营�?b>人口 300、幸福安乐的伟大城市</b>�?br><br>
+  L648:         右侧「目标」面板列出了 <b>11 个发展里程碑</b>(铺路 �?建房开�?�?人口 20 �?
+  L649:         晋升城镇 �?开疆拓�?�?建造大学…�?,跟着它走就不会迷路�?br>
+  L650:         每达成一个目标都会放礼花提示�?br><br>
+  L651:         <span class="dim">居民会自己走路、干活、生老病死、结婚生子——你要做的是为他们排布好家园�?/span>`,
+  L654:       title: '�?游戏说明 2/6 · 先修�?再建�?,
+  L655:       html: `<b>道路是这座城市的命脉</b>:所有服务类建筑(酒馆、药草屋、教堂…�?
+  L656:         必须<b>毗邻道路</b>,居民才能沿路前来使用。没有路,建筑就是摆设�?br><br>
+  L658:         �?从市政厅向外铺一条「土路�?可按住鼠标拖动连�?;<br>
+  L659:         �?沿路�?3~5 �?b>木屋</b>(住房);<br>
+  L660:         �?在沃土上开 2~3 �?<b>2×2 农田</b>�?br><br>
+  L661:         地块有讲�?农田�?b>沃土</b>(深褐�?上产量更�?临水 +15%;
+  L662:         伐木场要贴着森林,采石场要找岩石堆,猎人小屋要找林缘/水边�?b>兽径</b>�?br><br>
+  L663:         <b>自然资源是会再生�?/b>:森林会被砍稀、矿脉会被采空、猎场的动物会变�?
+  L664:         但它们都会按季节自己长回�?悬浮在资源格上可以看到蓄�?。`,
+  L667:       title: '�?游戏说明 3/6 · 居民的五种需�?,
+  L668:       html: `每位居民每天都需�?<br>
+  L669:         🌾 <b>食物</b>——农场产�?全城共享,断粮会饿死人;<br>
+  L670:         🏠 <b>住房</b>——无家可归者幸福暴�?<br>
+  L671:         🎭 <b>娱乐</b>——酒�?市集广场/剧院,按服务容量每日接�?<br>
+  L673:         �?<b>信仰</b>——「城镇」阶段后生效,教堂/大圣堂�?br><br>
+  L674:         五项加权就是<b>幸福�?/b>:高于 70 会来移民和新生儿,低于 30 居民会弃城而去�?br>
+  L675:         <b>右下角「覆盖层�?/b>切到娱乐/医疗/信仰,红色住宅就是被遗漏的居民——这是规划神器。`,
+  L678:       title: '�?游戏说明 4/6 · 经济与四�?,
+  L679:       html: `💰 <b>收入</b>:人口税金 × 幸福系数(幸福 100% 时约 1.5 �?,学堂/大学再加�?<br>
+  L680:         💸 <b>支出</b>:建造费 + 服务建筑维护�?顶栏实时显示)�?br><br>
+  L681:         一年四季各 20 �?农田产量:�?95% / �?110% / <b>�?130%</b> / <b>�?10%</b>�?
+  L682:         <b>冬季前务必囤�?/b>,或建冬天仍产 70% 的牧�?城镇阶段)�?br><br>
+  L683:         仓储有上�?谷仓加粮仓容量、仓库加木石容量;交易所会自动卖掉盈余换金币、缺粮时自动回购�?br><br>
+  L684:         <b>看不出来有没有收�?</b>建筑头顶每天会飘出真实产出数�?🪵+7.2 这种),
+  L685:         顶栏资源数会绿闪/红闪,右侧「城市」页还有<b>昨日产出</b>�?b>可再生资�?/b>两张表�?
+  L689:       title: '�?游戏说明 5/6 · 阶段 · 领地 · 灾祸',
+  L690:       html: `🏘�?<b>晋升阶段</b>:人口与幸福达标后,顶栏会出现发光的「晋升」按钮—�?
+  L691:         城镇解锁石屋/教堂/学堂�?城市解锁剧院/大学/大圣堂与外环领地�?br>
+  L692:         🗺�?<b>开�?/b>:点击地图上的暗色区块,花金币解锁新领地�?br><br>
+  L693:         ⚠️ 标准难度有灾�?<b>瘟疫</b>(靠医疗覆盖与水井)�?b>火灾</b>(水井圈内的建筑免�?�?
+  L694:         <b>盗匪</b>(治安所震慑)�?b>暴风�?/b>(耗粮激�?。躲不过就提前布防�?br>
+  L695:         <span class="dim">选沙盒难度则只有丰收、商队、移民潮等好事�?/span>`,
+  L698:       title: '�?游戏说明 6/6 · 操作速查',
+  L701:         <tr><td>移动视角</td><td>左键拖动 / WASD / 方向�?/ 点击小地�?/td></tr>
+  L703:         <tr><td>建�?/td><td>左侧选建�?�?左键放置(道路可拖动连�?</td></tr>
+  L704:         <tr><td>拆除</td><td>左下「�?拆除」工具或�?B,返还一半资�?/td></tr>
+  L706:         <tr><td>暂停 / 速度</td><td>空格暂停;数字�?1 / 2 / 3 �?1~3 倍�?顶栏同款)</td></tr>
+  L707:         <tr><td>查看建筑</td><td>选择工具下点击建�?会显示昨日实际产出与停产原因)</td></tr>
+  L708:         <tr><td>查看居民</td><td><b>点击任何一个走动的�?/b>,右侧会显示他的职业与当前任务</td></tr>
+  L709:         <tr><td>查看资源</td><td>鼠标悬浮在森�?岩石/猎场�?会显示蓄积与生长速度</td></tr>
+  L710:         <tr><td>覆盖�?/td><td>右下角下拉切�?/td></tr>
+  L724:     const auto = `<label class="tut-auto"><input type="checkbox" id="tut-auto-off" ${G.U.store.get('tc_tut_off') ? '' : 'checked'}> 进入游戏时自动打开本说�?/label>`;
+  L730:       prev.textContent = '上一�?;
+  L736:     next.textContent = last ? '🏗�?开始建�? : '下一�?;
+  L766:       你的聚落已成长为人口 300、幸福安乐的伟大城市�?br>
+  L767:       从一片荒野到炊烟万里——这是你亲手书写的拓城记�?br><br>
+  L768:       <span class="dim">你可以继续自由经�?或开创新的一局�?/span>`;
+  L788:   // ---------- 事件横幅:重大事件发生时给一�?读得�?的说�?----------
+  L795:       <button class="bn-close" title="关闭">�?/button>`;
+  L813:     if (G.RD.dayFloats) G.RD.dayFloats(); // 刚结算完的产出飘在建筑头�?
+  L818:   // 新游�?读档后的界面复位
+=== D:\游戏\3\js\save.js  bytes=4322  U+FFFD=11
+  L2: // 设计�?多阶段解�?+ 存档
+  L9:     if (!ready() || !G.sim.started) return; // 背景世界/未开局不写�?    try {
+  L27:         // v1 存档没有 nat 字段;旧档读入时按地形重新生成资源�?优雅降级)
+  L31:       if (!silent) G.UI.toast('💾 进度已保�?, 'good');
+  L43:       G.UI.toast('📂 已读取存�?�?' + data.day + ' �?', 'good');
+  L100:     // 可再生资源层:v1 旧档没有 nat 字段 �?按地形重新生�?优雅降级,不报�?

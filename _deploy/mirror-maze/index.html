@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>镜像迷城 · Mirror Maze</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1526'/%3E%3Cline x1='32' y1='8' x2='32' y2='56' stroke='%23fff' stroke-width='3'/%3E%3Ccircle cx='20' cy='34' r='8' fill='%231FA2FF'/%3E%3Ccircle cx='44' cy='34' r='8' fill='%23FF8A3D'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=1.2">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ 游戏画布 ============ -->
+  <div id="game-layer" class="layer hidden">
+    <canvas id="game-canvas"></canvas>
+    <!-- 后处理层：暗角 + 色彩分级（CSS 合成，不占用 canvas 逐像素开销） -->
+    <div id="postfx" aria-hidden="true"></div>
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <button id="hud-pause" class="hud-btn" title="暂停 (Esc)">⏸</button>
+        <div class="hud-title">
+          <div id="hud-level-name">初醒</div>
+          <div id="hud-mode-chip" class="mode-chip">完全镜像</div>
+        </div>
+        <div class="hud-stats">
+          <div id="hud-shards" class="hud-shards"></div>
+          <div id="hud-steps" class="hud-steps">步数 0 / 8</div>
+        </div>
+        <div class="hud-actions">
+          <button id="hud-undo" class="hud-btn" title="撤销 (Z)">↩</button>
+          <button id="hud-restart" class="hud-btn" title="重开 (R)">⟳</button>
+          <button id="hud-hint" class="hud-btn" title="提示 (H)">?</button>
+        </div>
+      </div>
+      <div id="hud-hint-box" class="hidden"></div>
+      <div id="hud-toast" class="hidden"></div>
+    </div>
+    <!-- 触屏控制 -->
+    <div id="touch-layer" class="hidden">
+      <div id="stick-zone-left" class="stick-zone"><div id="stick-left" class="stick"><div class="stick-knob"></div></div></div>
+      <div id="stick-zone-right" class="stick-zone hidden"><div id="stick-right" class="stick"><div class="stick-knob"></div></div></div>
+      <button id="btn-jump-left" class="jump-btn">跳</button>
+      <button id="btn-jump-right" class="jump-btn hidden">跳</button>
+    </div>
+  </div>
+
+  <!-- ============ 标题 / 主菜单 ============ -->
+  <div id="screen-title" class="layer screen">
+    <div class="title-mirror">
+      <div class="tm-char tm-left"><div class="tm-body"></div><div class="tm-label">棱</div></div>
+      <div class="tm-axis"></div>
+      <div class="tm-char tm-right"><div class="tm-body"></div><div class="tm-label">镜</div></div>
+    </div>
+    <h1 class="game-title">镜像迷城</h1>
+    <p class="game-subtitle">MIRROR&nbsp;MAZE&nbsp;·&nbsp;一套输入 · 两个角色 · 左右镜像联动</p>
+    <div class="menu-stack">
+      <button id="btn-continue" class="menu-btn primary hidden">继续冒险</button>
+      <button id="btn-new" class="menu-btn primary">开始冒险</button>
+      <button id="btn-chapters" class="menu-btn">章节选择</button>
+      <button id="btn-help" class="menu-btn">游戏说明</button>
+      <button id="btn-codex" class="menu-btn">镜像法则图鉴</button>
+      <button id="btn-settings" class="menu-btn">设置</button>
+      <button id="btn-about" class="menu-btn">关于</button>
+    </div>
+    <div class="title-save-info" id="title-save-info"></div>
+  </div>
+
+  <!-- ============ 章节选择 ============ -->
+  <div id="screen-chapters" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2>章节选择</h2><div class="head-right" id="chapters-shard-total"></div></div>
+    <div id="chapter-list" class="chapter-list"></div>
+  </div>
+
+  <!-- ============ 关卡选择 ============ -->
+  <div id="screen-levels" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2 id="levels-title">第一章 · 黎明</h2><div class="head-right" id="levels-shard-info"></div></div>
+    <div id="level-grid" class="level-grid"></div>
+    <p class="level-grid-tip">★ 通关 · ★ 集齐 3 枚镜之碎片 · ★ 达成步数目标</p>
+  </div>
+
+  <!-- ============ 设置 ============ -->
+  <div id="screen-settings" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2>设置</h2><div></div></div>
+    <div class="settings-panel">
+      <label class="setting-row"><span>音乐音量</span><input type="range" id="set-bgm" min="0" max="100" value="45"></label>
+      <label class="setting-row"><span>音效音量</span><input type="range" id="set-sfx" min="0" max="100" value="70"></label>
+      <label class="setting-row"><span>形状辅助（色盲安全，双编码）</span><input type="checkbox" id="set-shapes" checked></label>
+      <label class="setting-row"><span>减少动效</span><input type="checkbox" id="set-reduce"></label>
+      <label class="setting-row"><span>禅模式（镜像延迟放宽至 1.5 秒）</span><input type="checkbox" id="set-zen"></label>
+      <label class="setting-row"><span>震动反馈</span><input type="checkbox" id="set-vibro" checked></label>
+      <div class="setting-row-danger">
+        <button id="btn-reset-save" class="danger-btn">重置全部进度</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 图鉴 ============ -->
+  <div id="screen-codex" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2>镜像法则图鉴</h2><div class="head-right" id="codex-count"></div></div>
+    <div id="codex-list" class="codex-list"></div>
+  </div>
+
+  <!-- ============ 关于 ============ -->
+  <div id="screen-about" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2>关于</h2><div></div></div>
+    <div class="about-panel">
+      <p><b>《镜像迷城》Mirror Maze</b> —— 以"左右镜像联动"为唯一核心机制的 2.5D 横版对称解谜游戏。</p>
+      <p>双子"棱"与"镜"被真实之镜分隔在镜轴两侧。用一套输入同时驱动两人，踩下成对压力板、折射对称光束；当镜面破碎，立刻切换为一心二用，破解不对称谜题，集齐镜之碎片，打破诅咒。</p>
+      <p class="dim">操作：A/D 或 ←/→ 移动 · 空格跳跃 · 碎镜后 WASD 控棱 / 方向键控镜 · Z 撤销 · R 重开 · H 提示 · Esc 暂停。支持手柄与触屏。</p>
+      <p class="dim">本作对应立项策划案 V1.0 的 M0/M1 可玩原型（5 章 30 关），关卡编辑器、每日挑战与排行榜将在后续版本加入。</p>
+    </div>
+  </div>
+
+  <!-- ============ 游戏说明 ============ -->
+  <div id="screen-help" class="layer screen hidden">
+    <div class="screen-head"><button class="back-btn" data-back>←</button><h2>游戏说明</h2><div></div></div>
+    <div class="help-panel">
+
+      <div class="help-sec">
+        <h3>🎯 游戏目标</h3>
+        <p>双子<span class="t-cyan">「棱」</span>（左·青）与<span class="t-orange">「镜」</span>（右·橙）被镜轴分隔两岸。
+          用<b>一套输入同时驱动两个角色</b>，让他们<b>同时抵达各自的镜像之门</b>即可过关。
+          每关藏着 <span style="color:#ffd76a">3 枚镜之碎片</span>（两岸的镜像对共享同一枚），顺手收集它们。</p>
+      </div>
+
+      <div class="help-sec">
+        <h3>🎮 基本操作</h3>
+        <ul>
+          <li><kbd>A</kbd><kbd>D</kbd> 或 <kbd>←</kbd><kbd>→</kbd> 移动　·　<kbd>空格</kbd> / <kbd>W</kbd> / <kbd>↑</kbd> 跳跃</li>
+          <li>碎镜后分控：<kbd>WASD</kbd> 控制<span class="t-cyan">棱（左）</span>，<kbd>方向键</kbd> 控制<span class="t-orange">镜（右）</span></li>
+          <li><kbd>Z</kbd> 撤销（最多 3 步）　<kbd>R</kbd> 重开　<kbd>H</kbd> 提示　<kbd>Esc</kbd> 暂停</li>
+          <li>触屏：虚拟摇杆 + 跳跃键；碎镜后双摇杆分控。手柄：左摇杆 + A（碎镜后双摇杆）</li>
+        </ul>
+      </div>
+
+      <div class="help-sec">
+        <h3>🪞 五种镜像模式</h3>
+        <ul>
+          <li><span class="mode-badge">完全镜像</span>两侧完全同步——按左，两人都朝相反方向镜像移动。</li>
+          <li><span class="mode-badge">延迟镜像</span>右侧延迟 0.5 秒复刻你的操作，预判半拍之后的对岸。</li>
+          <li><span class="mode-badge">反向镜像</span>按右，<b>两个人都向右</b>——镜像直觉反转，像一支锁步的队伍。</li>
+          <li><span class="mode-badge">局部镜像</span>只有横移被镜像，右侧<b>没有跳跃</b>，右岸的路必须平。</li>
+          <li><span class="mode-badge mb-broken">碎镜独立</span>穿过碎镜结界后规则被打破，一心二用，各自行动。</li>
+        </ul>
+      </div>
+
+      <div class="help-sec">
+        <h3>⚙ 机关图例</h3>
+        <div class="legend-grid">
+          <div class="lg"><span class="lg-ic" style="color:#ffd76a">◆</span><span>镜之碎片，每关 3 枚</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#8b97ad">▬</span><span>同步压力板：两岸都踩过（保持）门开</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#9fe8ff">◎</span><span>传送门：从对岸对称位出现（单向）</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#8ff7ff">✦</span><span>棱镜光束：站上平台 j 激活折光镜 q，点亮水晶</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#b28bff">▤</span><span>节拍平台：随脉动时隐时现，实心时落脚</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#8ce6ff">≋</span><span>重力幕帘：触碰翻转重力，可沿天花板倒行</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#ff6a5e">▲</span><span>地刺：触碰即消散，零惩罚</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#ffe9a3">⚑</span><span>检查点：消散后在此重生</span></div>
+          <div class="lg"><span class="lg-ic" style="color:#ff5a5a">⚡</span><span>碎镜结界：触碰即打破镜像规则</span></div>
+        </div>
+      </div>
+
+      <div class="help-sec">
+        <h3>⭐ 星级评价</h3>
+        <ul>
+          <li>★ 通关　·　★ 集齐 3 枚镜之碎片　·　★ 步数不超过目标值</li>
+          <li>章节星级累积解锁后续章节；碎片累计提升收集者等级。</li>
+        </ul>
+      </div>
+
+      <div class="help-sec">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>没有失败惩罚：影子消散 2 秒后在检查点重生，大胆试错。</li>
+          <li>卡住了就 <kbd>Z</kbd> 撤销几步、<kbd>R</kbd> 重开，或点 <kbd>?</kbd> 看提示；卡关 90 秒会自动给出强提示。</li>
+          <li>延迟镜像觉得难？设置里开启「禅模式」可放宽到 1.5 秒。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 暂停 ============ -->
+  <div id="modal-pause" class="modal hidden">
+    <div class="modal-card">
+      <h3>已暂停</h3>
+      <div class="menu-stack">
+        <button id="pause-resume" class="menu-btn primary">继续</button>
+        <button id="pause-restart" class="menu-btn">重新开始本关</button>
+        <button id="pause-codex" class="menu-btn">镜像法则图鉴</button>
+        <button id="pause-exit" class="menu-btn">退出到章节</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 结算 ============ -->
+  <div id="modal-result" class="modal hidden">
+    <div class="modal-card result-card">
+      <h3 id="result-title">对称达成！</h3>
+      <div class="stars-row">
+        <div class="star" id="star-1">★</div>
+        <div class="star" id="star-2">★</div>
+        <div class="star" id="star-3">★</div>
+      </div>
+      <div class="result-rows" id="result-rows"></div>
+      <div class="result-btns">
+        <button id="result-replay" class="menu-btn">重玩</button>
+        <button id="result-next" class="menu-btn primary">下一关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 终章演出 ============ -->
+  <div id="modal-ending" class="modal hidden">
+    <div class="modal-card ending-card">
+      <div class="ending-axis"></div>
+      <h3>镜像之城，重归对称</h3>
+      <p id="ending-text"></p>
+      <button id="ending-close" class="menu-btn primary">返回主菜单</button>
+    </div>
+  </div>
+
+  <!-- ============ 竖屏提示 ============ -->
+  <div id="rotate-hint" class="hidden"><div>↻ 请横屏游玩《镜像迷城》</div></div>
+</div>
+
+<script src="js/audio.js?v=1.2"></script>
+<script src="js/input.js?v=1.2"></script>
+<script src="js/levels.js?v=1.2"></script>
+<script src="js/game.js?v=1.2"></script>
+<script src="js/ui.js?v=1.2"></script>
+<script src="js/main.js?v=1.2"></script>
+</body>
+</html>

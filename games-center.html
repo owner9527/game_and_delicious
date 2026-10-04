@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080f">
+<title>游戏中心 · 十部合集</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  color:#f2f5ff;
+  /* 用 min-height + margin:auto 居中：内容不高时居中，内容超高时正常向下排、可以滚动。
+     注意这里刻意【不写】overflow-x:hidden —— body 上设这个在 iOS/部分安卓浏览器会让整页滚不动。 */
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  padding:30px 22px 40px;
+  -webkit-tap-highlight-color:transparent;
+  background-color:#0a0c1a;
+  background-image:
+    radial-gradient(rgba(255,255,255,.05) .5px,transparent .6px),
+    radial-gradient(1200px 800px at 12% -12%,rgba(120,80,255,.32) 0%,transparent 58%),
+    radial-gradient(1000px 700px at 108% 8%,rgba(0,180,220,.26) 0%,transparent 55%),
+    radial-gradient(900px 900px at 50% 118%,rgba(255,140,90,.20) 0%,transparent 60%),
+    linear-gradient(165deg,#0a0c1a 0%,#121038 45%,#0d1226 100%);
+  background-size:3px 3px,auto,auto,auto,auto;
+  background-repeat:repeat,no-repeat,no-repeat,no-repeat,no-repeat;
+}
+main{width:100%;max-width:680px;margin:auto;position:relative}
+h1{font-size:clamp(32px,7.4vw,46px);font-weight:900;text-align:center;letter-spacing:3px;
+   background:linear-gradient(92deg,#ffe08a 0%,#ff9ec4 42%,#7ce7ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+   margin-bottom:8px;filter:drop-shadow(0 4px 22px rgba(255,190,120,.28))}
+p.tip{text-align:center;color:#98a2cf;font-size:13.5px;letter-spacing:.4px;margin-bottom:26px}
+a.game{position:relative;display:flex;gap:16px;align-items:center;text-decoration:none;color:#f2f5ff;
+  background:linear-gradient(180deg,rgba(32,40,82,.92),rgba(20,25,54,.92));
+  border:1px solid rgba(120,140,220,.28);border-radius:18px;
+  padding:17px 18px;margin-bottom:12px;transition:transform .18s,border-color .18s,box-shadow .18s;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+  box-shadow:0 10px 26px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden}
+a.game::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;opacity:0;transition:opacity .2s;
+  background:radial-gradient(420px 120px at 12% 0%,rgba(255,255,255,.16),transparent 70%)}
+a.game:active{transform:translateY(-1px) scale(.995)}
+a.game .ic{font-size:34px;flex:0 0 48px;height:48px;display:grid;place-items:center;
+  background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+a.game b{display:block;font-size:17.5px;margin-bottom:5px;letter-spacing:.3px}
+a.game small{color:#9aa3cf;font-size:12.5px;line-height:1.62;display:block}
+a.game .arrow{margin-left:auto;color:#8d97c9;font-size:22px;transition:transform .18s,color .18s}
+a.game .num{flex:0 0 auto;font-size:11px;font-weight:800;color:#93a0dd;border:1px solid rgba(120,140,220,.4);
+  border-radius:999px;padding:3px 9px;align-self:flex-start;margin-top:3px;letter-spacing:.5px}
+.myst{background:linear-gradient(180deg,rgba(48,38,88,.94),rgba(30,24,60,.94));border-color:rgba(150,120,240,.3)}
+.warm{background:linear-gradient(180deg,rgba(74,44,66,.94),rgba(50,30,46,.94));border-color:rgba(200,110,150,.32)}
+.fresh{background:linear-gradient(180deg,rgba(26,74,58,.94),rgba(20,50,42,.94));border-color:rgba(80,190,140,.32)}
+/* 悬停效果只在真正支持悬停的设备上启用，避免手机上点过之后卡片"卡"在浮起/高亮状态 */
+@media (hover:hover) and (pointer:fine){
+  a.game:hover{transform:translateY(-3px);border-color:rgba(255,214,110,.75);box-shadow:0 16px 34px rgba(0,0,0,.44),0 0 0 1px rgba(255,214,110,.18)}
+  a.game:hover::after{opacity:1}
+  a.game:hover .arrow{transform:translateX(4px);color:#ffd166}
+  .myst:hover{border-color:rgba(190,150,255,.85);box-shadow:0 16px 34px rgba(0,0,0,.44),0 0 0 1px rgba(190,150,255,.2)}
+  .warm:hover{border-color:rgba(255,150,190,.85)}
+  .fresh:hover{border-color:rgba(130,255,180,.85)}
+}
+footer{margin-top:22px;text-align:center;color:#5f6aa0;font-size:12px;line-height:1.9}
+</style>
+</head>
+<body>
+<main>
+  <h1>🕹️ 游戏中心</h1>
+  <p class="tip">十部游戏合集 · 手机电脑都能玩 · 进度自动保存在各自浏览器里</p>
+
+  <a class="game" href="./1/余烬之城.html">
+    <span class="num">01</span><span class="ic">🏜️</span>
+    <span style="flex:1"><b>余烬之城 · 多结局剧情冒险</b>
+    <small>末世剧情冒险 · 10个结局 · 每个选择都改变命运</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game" href="./2/index.html">
+    <span class="num">02</span><span class="ic">🔥</span>
+    <span style="flex:1"><b>星火拓荒 · 无尽之地</b>
+    <small>生存建造 · 程序化无限大陆 · 科技树与自动化工厂 · 夜晚抵御蚀影兽</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game" href="./3/index.html">
+    <span class="num">03</span><span class="ic">🏰</span>
+    <span style="flex:1"><b>拓城记 · 中古殖民模拟</b>
+    <small>造物主视角经营建设 · 居民需求驱动：住房/食物/娱乐/医疗/信仰 · 见证村庄繁荣或崩溃</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./4/index.html">
+    <span class="num">04</span><span class="ic">🗡️</span>
+    <span style="flex:1"><b>深渊词条 · 肉鸽打宝</b>
+    <small>类暗黑/以撒俯视角动作肉鸽 · 随机地图 × 技能词条组合 × 无尽成长刷宝</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./5/index.html">
+    <span class="num">05</span><span class="ic">♞</span>
+    <span style="flex:1"><b>幻境争锋 · 战棋自走棋</b>
+    <small>战棋自走棋 · 英雄羁绊 · 大部队布阵 · 以少胜多</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./6/index.html">
+    <span class="num">06</span><span class="ic">🦇</span>
+    <span style="flex:1"><b>回声 Echo（声音解谜冒险）</b>
+    <small>全程零文字 · 请戴耳机：用探测音“看见”黑暗 · 录音回放开门 · 和弦叠加解谜</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./7/index.html">
+    <span class="num">07</span><span class="ic">🪞</span>
+    <span style="flex:1"><b>镜像迷城 · Mirror Maze</b>
+    <small>光学反射解谜 · 旋转镜面把光束引向目标 · 层层递进的迷城关卡</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./8/index.html">
+    <span class="num">08</span><span class="ic">⏳</span>
+    <span style="flex:1"><b>时间碎片 Time Shards</b>
+    <small>三线并行因果解谜 · 同时操控过去/现在/未来重排因果链 · 8章102关+每日谜题</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game myst" href="./9/index.html">
+    <span class="num">09</span><span class="ic">🌌</span>
+    <span style="flex:1"><b>星穹拓荒 · Stellar Frontier</b>
+    <small>程序生成星系殖民Roguelike · 采集建造科研抵御星兽陨石 · 一局一宇宙 · 永久死亡+遗产成长</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="game fresh" href="./10/index.html">
+    <span class="num">10</span><span class="ic">🌿</span>
+    <span style="flex:1"><b>情绪花园 · Emotion Garden</b>
+    <small>把情绪种进土里 · 用颜色、文字或音乐表达心情 · 它会长成独一无二的种子慢慢开花</small></span>
+    <span class="arrow">›</span>
+  </a>
+
+  <footer>建议手机端「添加到主屏幕」，像 App 一样打开<br>点击任意卡片即可开始游玩</footer>
+</main>
+</body>
+</html>

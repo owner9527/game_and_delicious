@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b111a">
+<title>回声 Echo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2343C6AC' stroke-width='2' opacity='.55'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23F5A623' stroke-width='2' opacity='.8'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%2343C6AC'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- 界面层：菜单每屏文案 ≤ 20 字（游戏内零文字） -->
+<div id="ui">
+
+  <!-- 深空氛围层（纯 CSS 程序化：深空渐变 + 缓慢扩散的声波同心环 + 漂浮微粒 + 微弱体积光）
+       只在菜单/结算类界面显示，游戏进行中由 #ui.ambient 关闭，绝不遮挡 canvas -->
+  <div class="ambience" aria-hidden="true">
+    <span class="amb-glow"></span>
+    <span class="amb-ring r1"></span>
+    <span class="amb-ring r2"></span>
+    <span class="amb-ring r3"></span>
+    <span class="amb-beam"></span>
+    <span class="amb-dust"></span>
+  </div>
+
+  <!-- 启动页 -->
+  <section class="screen show" id="scr-boot">
+    <div class="ring-logo"><i></i><i></i><i></i><b></b></div>
+    <p class="boot-line">请戴上耳机 · 点击开始</p>
+    <p class="boot-sub">声音是唯一的语言</p>
+  </section>
+
+  <!-- 序章 -->
+  <section class="screen" id="scr-intro">
+    <div class="intro-box">
+      <p class="intro-l1">当世界陷入大静默</p>
+      <p class="intro-l2">你是最后的聆听者</p>
+    </div>
+    <button class="ghost-btn" data-act="intro-skip">继续</button>
+  </section>
+
+  <!-- 主菜单 -->
+  <section class="screen" id="scr-main">
+    <div class="ring-logo small"><i></i><i></i><i></i><b></b></div>
+    <h1 class="title">回 声</h1>
+    <nav class="menu-list">
+      <button data-act="continue" id="btn-continue">继续聆听</button>
+      <button data-act="chapters">章节旅程</button>
+      <button data-act="daily">每日谜题</button>
+      <button data-act="sandbox">听音训练场</button>
+      <button data-act="guide">游戏说明</button>
+      <button data-act="achievements">回声印记</button>
+      <button data-act="settings">设置</button>
+    </nav>
+    <p class="lv-tag" id="lv-tag">听感 · 1</p>
+  </section>
+
+  <!-- 章节选择 -->
+  <section class="screen" id="scr-chapters">
+    <header class="scr-head"><button class="back" data-act="back-main"></button><h2>章节旅程</h2></header>
+    <div class="chapter-grid" id="chapter-grid"></div>
+  </section>
+
+  <!-- 关卡选择 -->
+  <section class="screen" id="scr-levels">
+    <header class="scr-head"><button class="back" data-act="back-chapters"></button><h2 id="ch-title">第一章</h2></header>
+    <div class="level-grid" id="level-grid"></div>
+  </section>
+
+  <!-- 操作说明 -->
+  <section class="screen" id="scr-controls">
+    <header class="scr-head"><button class="back" data-act="back-main"></button><h2>操作</h2></header>
+    <div class="ctl-cols" id="ctl-cols"></div>
+  </section>
+
+  <!-- 游戏说明 -->
+  <section class="screen" id="scr-guide">
+    <header class="scr-head"><button class="back" data-act="back-main"></button><h2>游戏说明</h2></header>
+    <div class="guide-body">
+      <div class="guide-sec">
+        <h3><i class="g-ic">🌍</i>你是聆听者</h3>
+        <p>世界被「大静默」笼罩，一片漆黑。<b>声音是你唯一的光</b>——用耳朵代替眼睛，穿过每一关，抵达深处的记忆晶石，对它发出探测音完成三次充能。</p>
+      </div>
+      <div class="guide-sec">
+        <h3><i class="g-ic">🔊</i>三种声音能力</h3>
+        <p><b>探测音</b>：点按屏幕 / 空格，声波点亮周围轮廓。<br><b>录音</b>：长按录音键 / R，录下附近的声音（走近发声物、撞击它们）。<br><b>回放</b>：点回放键 / E 复现声音——<b>机关只响应特定的声音</b>。</p>
+      </div>
+      <div class="guide-sec">
+        <h3><i class="g-ic">👂</i>听声辨物</h3>
+        <p>回声越迟 = 距离越远；音调越低 = 物体越大；音色揭示材质：金属、玻璃、流水、阵风……立体声的左右方位指示声源方向。</p>
+      </div>
+      <div class="guide-sec">
+        <h3><i class="g-ic">🗝️</i>机关与和声钥匙</h3>
+        <p>锈蚀铁门要<b>低沉的金属撞击</b>；玻璃桥要<b>清脆的高频水声</b>（声音持续期间桥才实体化）；共鸣钟要<b>两秒以上的稳定长音</b>。选中多个声纹再叠加，可以组成「和声钥匙」。</p>
+      </div>
+      <div class="guide-sec">
+        <h3><i class="g-ic">👤</i>静默者</h3>
+        <p>它们看不见你，但听得见你。回放声音会暴露位置（右侧指示条升高）——用<b>投掷诱饵</b>把声音扔到远处引开它们。被抓三次只回到本段起点，<b>已录的声纹不会丢失</b>。</p>
+      </div>
+      <div class="guide-sec">
+        <h3><i class="g-ic">💎</i>收集与评级</h3>
+        <p>每关藏有 3 枚「声之碎片」，靠近时会听见微光音。结算按通关时间、碎片、回放次数评级 S / A / B / C。卡住约 1 分钟会有微光指引方向，2 分钟后出现金色声纹箭头为你指路。</p>
+      </div>
+      <div class="guide-foot"><button class="ghost-btn" data-act="controls-from-guide">查看按键与触屏操作</button></div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="screen" id="scr-settings">
+    <header class="scr-head"><button class="back" data-act="back-main"></button><h2>设置</h2></header>
+    <div class="set-body">
+      <div class="set-row"><label>主音量</label><input type="range" id="set-vol" min="0" max="1" step="0.01"></div>
+      <div class="set-row"><label>音乐</label><input type="range" id="set-music" min="0" max="1" step="0.01"></div>
+      <div class="set-row"><label>音效</label><input type="range" id="set-sfx" min="0" max="1" step="0.01"></div>
+      <div class="set-row"><label>回声校准</label><input type="range" id="set-lat" min="-200" max="200" step="10"><span class="set-val" id="val-lat"></span></div>
+      <div class="set-row tgl"><label>声纹可视化</label><button class="switch" id="set-viz"></button></div>
+      <div class="set-row seg"><label>视觉辅助</label><div class="seg-ctl" id="set-vassist"><button data-v="0">关</button><button data-v="1">基础</button><button data-v="2">完整</button></div></div>
+      <div class="set-row tgl"><label>纯听觉模式</label><button class="switch" id="set-pure"></button></div>
+      <div class="set-row tgl"><label>温和模式</label><button class="switch" id="set-gentle"></button></div>
+      <div class="set-row tgl"><label>震动反馈</label><button class="switch" id="set-vibe"></button></div>
+      <div class="set-row tgl"><label>声纹主题</label><div class="theme-dots" id="theme-dots"></div></div>
+      <div class="set-foot">
+        <button class="ghost-btn" data-act="reset-save">抹去所有回声</button>
+        <span class="reset-hint" id="reset-hint">再点一次确认</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 成就 -->
+  <section class="screen" id="scr-ach">
+    <header class="scr-head"><button class="back" data-act="back-main"></button><h2>回声印记</h2></header>
+    <div class="ach-list" id="ach-list"></div>
+  </section>
+
+  <!-- 暂停 -->
+  <section class="screen modal" id="scr-pause">
+    <div class="modal-box">
+      <h2>静默暂停</h2>
+      <nav class="menu-list">
+        <button data-act="resume">继续</button>
+        <button data-act="retry">重新开始本关</button>
+        <button data-act="ctl-from-pause">操作</button>
+        <button data-act="quit-level">离开关卡</button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 结算 -->
+  <section class="screen modal" id="scr-settle">
+    <div class="modal-box settle">
+      <div class="rate" id="settle-rate">S</div>
+      <div class="frag-row" id="settle-frags"></div>
+      <div class="stat-row">
+        <div class="stat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><b id="st-time">0:00</b></div>
+        <div class="stat"><svg viewBox="0 0 24 24"><path d="M12 3l3 6-3 12-3-12z" fill="currentColor"/></svg><b id="st-plays">0</b></div>
+      </div>
+      <nav class="menu-list row">
+        <button data-act="settle-retry">重来</button>
+        <button data-act="settle-next" id="btn-next">下一关</button>
+        <button data-act="settle-menu">回声之环</button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 终章 -->
+  <section class="screen" id="scr-ending">
+    <div class="ending-box">
+      <p class="end-l">静默退去</p>
+      <p class="end-l">世界重新有了回声</p>
+      <p class="end-s">而你，想起了自己的名字 —— 聆听者</p>
+    </div>
+    <button class="ghost-btn" data-act="ending-done">回到回声之环</button>
+  </section>
+
+  <!-- 操作提示浮层（菜单内可读文字） -->
+  <div id="toast"></div>
+</div>
+
+<script src="js/audio.js?v=2"></script>
+<script src="js/levels.js?v=2"></script>
+<script src="js/engine.js?v=2"></script>
+<script src="js/ui.js?v=2"></script>
+<script src="js/main.js?v=2"></script>
+</body>
+</html>

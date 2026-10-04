@@ -1,0 +1,20 @@
+# 备份和临时目录（体积大、不需要版本管理）
+_backup_*/
+_cmp_old/
+_backup_before_art/
+
+# 打包产物（能随时重新生成）
+*.tar.gz
+_deploy.tar.gz
+
+# 垃圾文件：probe.mjs 参数缺陷曾生成过这种名字的文件
+--wait=*
+
+# 截图和日志
+_shots/
+*.log
+
+# Python / Node 缓存
+__pycache__/
+node_modules/
+.venv/

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拓城记 · 中古殖民模拟</title>
+<link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- 顶部资源栏 -->
+  <div id="topbar" class="hidden">
+    <div class="tb-left">
+      <div class="logo">拓城记</div>
+      <div class="chip" id="chip-date" title="纪元时间">📅 --</div>
+      <div class="chip" id="chip-gold" title="金币">💰 0</div>
+      <div class="chip" id="chip-wood" title="木材">🪵 0</div>
+      <div class="chip" id="chip-stone" title="石料">🪨 0</div>
+      <div class="chip" id="chip-food" title="粮食">🌾 0</div>
+      <div class="chip" id="chip-pop" title="人口">👥 0/0</div>
+      <div class="chip" id="chip-hap" title="幸福度">😊 50%</div>
+    </div>
+    <div id="goal-strip" title="当前发展目标 · 点击展开全部 11 项里程碑"></div>
+    <div class="tb-right">
+      <button id="btn-stage" class="btn-accent hidden" title="达成条件,可以升级聚落">⬆ 升级</button>
+      <div class="speed-group">
+        <button data-speed="0" id="spd-0" title="暂停 (空格)">⏸</button>
+        <button data-speed="1" id="spd-1" class="active" title="1 倍速 · 一天 4 秒 (数字键 1)">▶</button>
+        <button data-speed="2" id="spd-2" title="2 倍速 (数字键 2)">▶▶</button>
+        <button data-speed="3" id="spd-3" title="3 倍速 (数字键 3)">▶▶▶</button>
+      </div>
+      <button id="btn-help" title="游戏说明(怎么玩)">❓ 说明</button>
+      <button id="btn-save" title="保存游戏">💾 保存</button>
+      <button id="btn-load" title="读取存档">📂 读取</button>
+      <button id="btn-new" title="开始新游戏">✚ 新游戏</button>
+    </div>
+  </div>
+
+  <!-- 目标条下拉:完整里程碑列表(点击顶栏目标条展开/收起) -->
+  <div id="goal-drop" class="hidden"></div>
+
+  <!-- 左侧建造面板 -->
+  <div id="palette" class="hidden">
+    <div class="palette-title">🛠 建造</div>
+    <div id="palette-tabs"></div>
+    <div id="palette-list"></div>
+    <div class="palette-tools">
+      <div class="palette-title">工具</div>
+      <div class="tool-row">
+        <button id="tool-select" class="tool-btn active" title="选择/查看 (ESC)">👆 选择</button>
+        <button id="tool-bulldoze" class="tool-btn" title="拆除建筑,返还一半资源 (B)">💥 拆除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧信息面板 -->
+  <div id="sidepanel" class="hidden">
+    <div id="panel-tabs">
+      <button data-tab="info" class="active">详情</button>
+      <button data-tab="city">城市</button>
+      <button data-tab="goal">目标</button>
+      <button data-tab="log">日志</button>
+    </div>
+    <div id="panel-body"></div>
+  </div>
+
+  <!-- 小地图 -->
+  <div id="minimap-wrap" class="hidden"><canvas id="minimap" width="144" height="144"></canvas></div>
+
+  <!-- 覆盖层选择 -->
+  <div id="overlay-sel" class="hidden">
+    <label>覆盖层</label>
+    <select id="overlay-mode">
+      <option value="none">无</option>
+      <option value="hap">幸福度</option>
+      <option value="joy">娱乐覆盖</option>
+      <option value="medical">医疗覆盖</option>
+      <option value="faith">信仰覆盖</option>
+    </select>
+  </div>
+
+  <!-- 提示 -->
+  <div id="alerts" class="hidden"></div>
+  <div id="banner" class="hidden"></div>
+  <div id="toasts"></div>
+  <div id="tooltip" class="hidden"></div>
+
+  <!-- 开始界面 -->
+  <div id="modal-start" class="modal">
+    <div class="modal-box start-box">
+      <h1>拓 城 记</h1>
+      <div class="subtitle">中古殖民模拟 · 造物主视角</div>
+      <p class="start-desc">带领一小队拓荒者,在蛮荒大陆上规划道路、建造家园。<br>
+      居民有住房、食物、娱乐、医疗与信仰的需求——满足他们,见证村庄成长为伟大城市;<br>疏于照料,饥饿与瘟疫将引发连锁崩溃。</p>
+      <div class="start-row">
+        <span class="start-label">难度</span>
+        <label><input type="radio" name="difficulty" value="normal" checked> 标准(含灾祸事件)</label>
+        <label><input type="radio" name="difficulty" value="sandbox"> 沙盒(无灾无难)</label>
+      </div>
+      <div class="start-row">
+        <span class="start-label">地图种子</span>
+        <input type="text" id="input-seed" placeholder="留空则随机" maxlength="16">
+      </div>
+      <div class="start-btns">
+        <button id="btn-start-new" class="btn-big">🌾 开辟新领地</button>
+        <button id="btn-start-continue" class="btn-big btn-ghost hidden">📂 继续上次进度</button>
+      </div>
+      <div class="start-tips">
+        💡 玩法提示:先铺 <b>道路</b>,再沿路建 <b>木屋</b> 与 <b>农田</b>;<br>
+        所有服务建筑必须毗邻道路,居民才能沿路前往;<br>用底部"覆盖层"检查娱乐/医疗/信仰的覆盖盲区。
+      </div>
+    </div>
+  </div>
+
+  <!-- 通用弹窗 -->
+  <div id="modal-generic" class="modal hidden">
+    <div class="modal-box">
+      <h2 id="modal-title"></h2>
+      <div id="modal-content"></div>
+      <div id="modal-btns"></div>
+    </div>
+  </div>
+
+  <script src="js/utils.js?v=5"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/map.js?v=5"></script>
+  <script src="js/path.js?v=5"></script>
+  <script src="js/resources.js?v=5"></script>
+  <script src="js/buildings.js?v=5"></script>
+  <script src="js/residents.js?v=5"></script>
+  <script src="js/economy.js?v=5"></script>
+  <script src="js/events.js?v=5"></script>
+  <script src="js/sim.js?v=5"></script>
+  <script src="js/render.js?v=5"></script>
+  <script src="js/ui.js?v=5"></script>
+  <script src="js/save.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
+</body>
+</html>

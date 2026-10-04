@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星穹拓荒 · Stellar Frontier</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- 主游戏画布 -->
+<canvas id="game-canvas"></canvas>
+
+<!-- ============ 主菜单 ============ -->
+<div id="screen-menu" class="screen">
+  <canvas id="menu-canvas"></canvas>
+  <div class="menu-inner">
+    <div class="menu-title-wrap">
+      <div class="menu-sub">STELLAR FRONTIER</div>
+      <h1 class="menu-title">星穹拓荒</h1>
+      <div class="menu-slogan">一局一宇宙 · 一死一新生</div>
+    </div>
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btn-campaign">▶ 星图长征 <span class="btn-note">主线 · 九站跃迁</span></button>
+      <button class="btn" id="btn-endless">∞ 深空漫游 <span class="btn-note">无尽 · 挑战极限</span></button>
+      <button class="btn" id="btn-weekly">◈ 每周挑战 <span class="btn-note">固定种子 · 公平竞技</span></button>
+      <button class="btn" id="btn-sandbox">⚙ 沙盒模式 <span class="btn-note">自定义种子</span></button>
+      <button class="btn" id="btn-continue" style="display:none">↺ 继续上次征程 <span class="btn-note">里程碑存档 · 读取后30秒销毁</span></button>
+      <div class="menu-row">
+        <button class="btn btn-small" id="btn-archive">⬡ 殖民者档案</button>
+        <button class="btn btn-small" id="btn-settings">⚙ 设置</button>
+        <button class="btn btn-small" id="btn-help">? 玩法说明</button>
+      </div>
+    </div>
+    <div class="menu-footer" id="menu-footer">探索者档案 Lv.1 · 遗产点 0</div>
+  </div>
+</div>
+
+<!-- ============ 星图选站 ============ -->
+<div id="screen-galaxy" class="screen" style="display:none">
+  <canvas id="galaxy-canvas"></canvas>
+  <div class="galaxy-top">
+    <button class="btn btn-small" id="btn-galaxy-back">◀ 返回</button>
+    <div class="galaxy-station" id="galaxy-station">第 1 站 / 9</div>
+    <div class="galaxy-seed" id="galaxy-seed">种子: ——</div>
+  </div>
+  <div class="galaxy-panel glass" id="galaxy-panel">
+    <div class="panel-title" id="planet-name">点击行星进行扫描</div>
+    <div class="planet-type" id="planet-type">——</div>
+    <div class="radar-wrap"><canvas id="radar-canvas" width="230" height="200"></canvas></div>
+    <div class="env-list" id="env-list"></div>
+    <div class="goal-box" id="goal-box">
+      <div class="goal-title">殖民目标</div>
+      <div class="goal-desc" id="goal-desc">——</div>
+    </div>
+    <button class="btn btn-primary" id="btn-land" disabled>选择该行星降落</button>
+    <div class="scan-hint" id="scan-hint">扫描其他行星可以对比环境参数</div>
+  </div>
+  <!-- 降落点选择 -->
+  <div id="site-select" class="modal" style="display:none">
+    <div class="modal-box glass wide">
+      <div class="modal-title">选择降落点</div>
+      <div class="modal-sub">综合评估资源与地形，落点不可更改</div>
+      <div class="site-cards" id="site-cards"></div>
+      <button class="btn btn-small" id="btn-site-cancel">◀ 重新扫描</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 沙盒配置 ============ -->
+<div id="screen-sandbox" class="screen" style="display:none">
+  <canvas id="menu-canvas2"></canvas>
+  <div class="menu-inner narrow">
+    <h2 class="screen-title">沙盒模式</h2>
+    <div class="form-row"><label>种子</label><input type="text" id="sb-seed" placeholder="留空随机" maxlength="24"></div>
+    <div class="form-row"><label>威胁等级 <span id="sb-threat-v">3</span></label><input type="range" id="sb-threat" min="1" max="9" value="3"></div>
+    <div class="form-row"><label>资源倍率 <span id="sb-res-v">1.0x</span></label><input type="range" id="sb-res" min="5" max="30" value="10"></div>
+    <div class="form-row"><label>事件 <span id="sb-event-v">开启</span></label><button class="btn btn-small" id="sb-event">切换</button></div>
+    <div class="menu-row">
+      <button class="btn btn-small" id="btn-sandbox-back">◀ 返回</button>
+      <button class="btn btn-primary" id="btn-sandbox-start">▶ 开始拓荒</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 殖民者档案（遗产/成就/榜单） ============ -->
+<div id="screen-archive" class="screen" style="display:none">
+  <div class="archive-inner">
+    <div class="archive-head">
+      <h2 class="screen-title">殖民者档案</h2>
+      <div class="archive-stats" id="archive-stats"></div>
+      <button class="btn btn-small" id="btn-archive-back">◀ 返回</button>
+    </div>
+    <div class="archive-tabs">
+      <button class="atab active" data-tab="legacy">遗产解锁</button>
+      <button class="atab" data-tab="achv">成就</button>
+      <button class="atab" data-tab="rank">每周挑战榜</button>
+    </div>
+    <div class="archive-body glass" id="archive-body"></div>
+  </div>
+</div>
+
+<!-- ============ 游戏内 HUD ============ -->
+<div id="hud" style="display:none">
+  <!-- 左上资源栏 -->
+  <div class="res-bar glass" id="res-bar">
+    <div class="res" id="res-ore"><i class="res-ico ico-ore">◆</i><div><b>0</b><span>矿石</span></div></div>
+    <div class="res" id="res-org"><i class="res-ico ico-org">❧</i><div><b>0</b><span>有机物</span></div></div>
+    <div class="res" id="res-energy"><i class="res-ico ico-nrg">⚡</i><div><b>0</b><span>能源</span></div><i class="ns-badge" id="ns-badge" style="display:none">0</i></div>
+    <div class="res" id="res-research"><i class="res-ico ico-rsh">✦</i><div><b>0</b><span>科研点</span></div></div>
+    <div class="res" id="res-pop"><i class="res-ico ico-pop">☻</i><div><b>0/12</b><span>殖民者</span></div></div>
+    <div class="res" id="res-morale"><i class="res-ico ico-mor">☺</i><div><b>50</b><span>士气</span></div></div>
+  </div>
+  <!-- 缺电建筑列表（能源赤字时出现，纯展示不挡操作） -->
+  <div class="ns-list" id="ns-list" style="display:none"></div>
+  <!-- 顶部中央：目标与时间 -->
+  <div class="top-center" id="top-center">
+    <div class="goal-bar glass">
+      <span class="goal-label" id="hud-goal-label">殖民目标</span>
+      <div class="goal-progress"><div class="goal-fill" id="hud-goal-fill"></div></div>
+      <span class="goal-val" id="hud-goal-val">0/60</span>
+    </div>
+    <div class="hud-sub">
+      <span id="hud-station">第 1 站</span> · <span id="hud-day">第 1 天</span> · <span id="hud-clock">08:00</span> ·
+      威胁 <span id="hud-threat" class="threat-num">1</span>
+    </div>
+  </div>
+  <!-- 右上：预警与速度 -->
+  <div class="top-right">
+    <div class="alert-bar glass" id="alert-bar" style="display:none">
+      <span class="alert-ico">⚠</span><span id="alert-text"></span><span id="alert-count"></span>
+    </div>
+    <div class="speed-ctrl glass">
+      <button class="spd" data-spd="0" id="btn-pause" title="暂停">❚❚</button>
+      <button class="spd active" data-spd="1">1x</button>
+      <button class="spd" data-spd="2">2x</button>
+      <button class="spd" data-spd="3">3x</button>
+      <button class="spd" id="btn-ingame-help" title="游戏说明 (H)">?</button>
+      <button class="spd" id="btn-ingame-settings" title="设置">⚙</button>
+    </div>
+    <!-- 里程碑存档销毁倒计时（读取存档后的 30 秒内显示） -->
+    <div class="save-timer" id="save-timer" style="display:none">⏳ 里程碑存档 <b id="save-timer-val">30</b>s 后销毁</div>
+  </div>
+  <!-- 事件滚动条 -->
+  <div class="event-ticker glass" id="event-ticker" style="display:none"></div>
+  <!-- 小地图 -->
+  <div class="minimap-wrap glass"><canvas id="minimap" width="170" height="112"></canvas></div>
+  <!-- 右下主按钮 -->
+  <div class="dock glass" id="dock">
+    <button class="dock-btn" id="btn-build"><i>⬢</i><span>建造</span></button>
+    <button class="dock-btn" id="btn-tech"><i>✦</i><span>科技</span><b class="dot" id="tech-dot" style="display:none"></b></button>
+    <button class="dock-btn" id="btn-quest"><i>☰</i><span>日志</span><b class="dot" id="quest-dot" style="display:none"></b></button>
+    <button class="dock-btn warn" id="btn-warp" style="display:none"><i>▲</i><span>跃迁</span></button>
+  </div>
+  <!-- 教程任务 / 建议目标（教学结束后复用同一面板） -->
+  <div class="tut-panel glass" id="tut-panel" style="display:none">
+    <div class="tut-title" id="tut-title-bar"><span id="tut-title-txt">◈ 教学任务</span><button class="tut-close" id="tut-close" title="忽略建议目标" style="display:none">✕</button></div>
+    <div class="tut-list" id="tut-list"></div>
+  </div>
+  <!-- 能源赤字警告 -->
+  <div class="brownout glass" id="brownout" style="display:none">⚡ 能源赤字！<span id="brownout-time">300</span>s 后基地瘫痪</div>
+  <!-- 里程碑存档一次性横幅（读取存档进入对局时显示 6 秒） -->
+  <div class="ms-banner" id="ms-banner" style="display:none">⏳ 本局为里程碑存档：读取已生效，<b>30 秒后该存档自动销毁</b>（永久死亡规则）</div>
+</div>
+
+<!-- ============ 建造面板 ============ -->
+<div id="panel-build" class="side-panel glass" style="display:none">
+  <div class="panel-head"><span class="panel-title">建造设施</span><button class="x" data-close="panel-build">✕</button></div>
+  <div class="build-cats" id="build-cats"></div>
+  <div class="build-list" id="build-list"></div>
+</div>
+
+<!-- ============ 科技面板 ============ -->
+<div id="panel-tech" class="side-panel glass wide-panel" style="display:none">
+  <div class="panel-head"><span class="panel-title">科技树 <span id="tech-have" class="dim"></span></span><button class="x" data-close="panel-tech">✕</button></div>
+  <div class="tech-cols" id="tech-cols"></div>
+</div>
+
+<!-- ============ 建筑详情 ============ -->
+<div id="panel-info" class="side-panel glass" style="display:none">
+  <div class="panel-head"><span class="panel-title" id="info-title">建筑</span><button class="x" data-close="panel-info">✕</button></div>
+  <div id="info-body"></div>
+</div>
+
+<!-- ============ 日志面板 ============ -->
+<div id="panel-log" class="side-panel glass" style="display:none">
+  <div class="panel-head"><span class="panel-title">殖民日志</span><button class="x" data-close="panel-log">✕</button></div>
+  <div class="log-list" id="log-list"></div>
+</div>
+
+<!-- ============ 通用弹窗（事件选择等） ============ -->
+<div id="modal" class="modal" style="display:none">
+  <div class="modal-box glass" id="modal-box">
+    <div class="modal-tag" id="modal-tag">事件</div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-opts" id="modal-opts"></div>
+  </div>
+</div>
+
+<!-- ============ 结算 ============ -->
+<div id="screen-settle" class="screen settle" style="display:none">
+  <div class="settle-box glass">
+    <div class="settle-rank" id="settle-rank">S</div>
+    <div class="settle-title" id="settle-title">殖民成功</div>
+    <div class="settle-sub" id="settle-sub"></div>
+    <div class="settle-rows" id="settle-rows"></div>
+    <div class="settle-legacy" id="settle-legacy"></div>
+    <div class="settle-new-achv" id="settle-achv"></div>
+    <div class="settle-btns" id="settle-btns"></div>
+  </div>
+</div>
+
+<!-- ============ 暂停覆盖 ============ -->
+<div id="pause-cover" style="display:none"><div class="pause-text">已暂停<span>打开面板时自动暂停 · 随时下令</span></div></div>
+
+<!-- ============ 跃迁动画 ============ -->
+<div id="warp-fx" style="display:none"><div class="warp-lines"></div><div class="warp-text" id="warp-text">跃迁中…</div></div>
+
+<!-- ============ Toast ============ -->
+<div id="toasts"></div>
+
+<!-- ============ 设置弹窗 ============ -->
+<div id="settings-modal" class="modal" style="display:none">
+  <div class="modal-box glass">
+    <div class="modal-title">设置</div>
+    <div class="settings-list">
+      <div class="set-row"><span>音效</span><button class="tgl" id="tgl-sound">开</button></div>
+      <div class="set-row"><span>性能模式（减少光晕与粒子）</span><button class="tgl" id="tgl-perf">关</button></div>
+      <div class="set-row"><span>色弱友好（重映射警示色）</span><button class="tgl" id="tgl-cb">关</button></div>
+      <div class="set-row"><span>全局字号</span><span class="seg" id="seg-font"><button data-v="0" class="active">标准</button><button data-v="1">大</button><button data-v="2">特大</button></span></div>
+      <div class="set-row"><span>禅模式（无限预警·从容节奏）</span><button class="tgl" id="tgl-zen">关</button></div>
+    </div>
+    <button class="btn btn-small" data-close="settings-modal">关闭</button>
+  </div>
+</div>
+
+<!-- ============ 游戏说明（分页） ============ -->
+<div id="help-modal" class="modal" style="display:none">
+  <div class="modal-box glass wide">
+    <div class="modal-title">游戏说明</div>
+    <div class="help-tabs" id="help-tabs">
+      <button class="htab active" data-ht="basics">🎯 目标与循环</button>
+      <button class="htab" data-ht="res">📦 资源</button>
+      <button class="htab" data-ht="build">⬢ 建筑图鉴</button>
+      <button class="htab" data-ht="event">⚠ 事件与威胁</button>
+      <button class="htab" data-ht="ctrl">🎮 操作</button>
+      <button class="htab" data-ht="tips">💡 技巧</button>
+    </div>
+    <div class="help-body" id="help-body"></div>
+    <button class="btn btn-small" data-close="help-modal">开始拓荒</button>
+  </div>
+</div>
+
+<script src="js/rng.js"></script>
+<script src="js/data.js"></script>
+<script src="js/gen.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

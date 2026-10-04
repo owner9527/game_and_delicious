@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗡️</text></svg>">
+<meta charset="UTF-8">
+<title>深渊词条 · 肉鸽打宝</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="game" width="1280" height="832"></canvas>
+
+    <!-- ============ 战斗 HUD ============ -->
+    <div id="hud" class="hidden">
+    <div id="hud-tl">
+      <div id="hpbar"><div id="hpfill"></div><span id="hptext">100/100</span></div>
+      <div id="xpbar"><div id="xpfill"></div><span id="lvtext">Lv.1</span></div>
+      <div id="shieldtag" class="hidden">◈ 秘法护盾</div>
+    </div>
+    <div id="hud-tc">
+      <div id="floortext">第 1 层</div>
+      <div id="roomtext">本层进度 0/6 房间 · 剩余敌人 0</div>
+      <div id="objtext"></div>
+    </div>
+    <div id="hud-tr">
+      <canvas id="minimap" width="220" height="160"></canvas>
+      <div id="goldtext">🪙 0 &nbsp;💠 0</div>
+    </div>
+    <div id="hud-bl"><div id="buffrow"></div></div>
+    <div id="hud-br">
+      <div id="novaind" class="hidden"></div>
+      <div id="dashind">冲刺 就绪</div>
+      <div class="hint">WASD 移动 · 左键射击 · Q 技能 · 空格冲刺 · E 互动 · Tab 背包 · Esc 暂停</div>
+    </div>
+    <div id="bossbar" class="hidden">
+      <div id="bossname">骨龙王</div>
+      <div id="bossbarbg"><div id="bossbarfill"></div></div>
+    </div>
+    <div id="interacttip" class="hidden"></div>
+  </div>
+
+  <div id="banner" class="hidden"><div id="banner-main"></div><div id="banner-sub"></div></div>
+
+  <!-- ============ 新手引导覆盖层(分步 / 可跳过 / 可重看) ============ -->
+  <div id="tut-root" class="hidden">
+    <div id="tut-veil"></div>
+    <div id="tut-spot"></div>
+    <div id="tut-arrow"></div>
+    <div id="tut-card">
+      <div class="tut-head">
+        <span class="tut-step">新手引导 <b id="tut-num">1</b>/<b id="tut-total">9</b></span>
+        <span class="tut-dots" id="tut-dots"></span>
+      </div>
+      <div class="tut-title" id="tut-title"></div>
+      <div class="tut-text" id="tut-text"></div>
+      <div class="tut-keys" id="tut-keys"></div>
+      <div class="tut-btns">
+        <button class="btn small primary" id="tut-next">下一步 ▸</button>
+        <button class="btn small" id="tut-skip">跳过引导 (Esc)</button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 装备对比浮层(按住 Alt / 触屏长按拾取物) ============ -->
+  <div id="cmp-float" class="hidden"></div>
+
+  <!-- ============ 移动端虚拟控件(仅触屏设备显示, 检测见 main.js) ============ -->
+  <div id="touchctl">
+    <div id="joy"><div id="joy-knob"></div></div>
+    <div id="touch-btns">
+      <div class="tbtn" id="btn-act-t">互动</div>
+      <div class="tbtn" id="btn-dash-t">冲刺</div>
+      <div class="tbtn" id="btn-fire-t">开火</div>
+    </div>
+  </div>
+
+  <!-- ============ 主菜单 ============ -->
+  <div id="screen-main" class="screen">
+    <div class="panel menu-panel">
+      <h1 class="game-title">深渊词条</h1>
+      <div class="game-sub">肉鸽打宝 · 随机地图 × 词条 Build × 无尽成长</div>
+      <div class="menu-btns">
+        <button class="btn primary" id="btn-new">⸸ 进入深渊</button>
+        <div class="seedrow">
+          <input id="seed-input" placeholder="种子(留空随机)" maxlength="16">
+          <button class="btn small" id="btn-tutorial" title="分步新手引导,可跳过,可随时重看">✦ 新手引导</button>
+        </div>
+        <button class="btn hidden" id="btn-continue">▸ 继续冒险</button>
+        <button class="btn" id="btn-altar">◈ 深渊祭坛(永久成长)</button>
+        <button class="btn" id="btn-help">？操作与系统说明</button>
+      </div>
+      <div class="menu-stats" id="menu-stats"></div>
+      <div class="menu-foot">Canvas 2D · 数据表驱动词条池 · 局内/局外双存档 · v1.0</div>
+    </div>
+  </div>
+
+  <!-- ============ 深渊祭坛(局外成长) ============ -->
+  <div id="screen-altar" class="screen hidden">
+    <div class="panel wide-panel">
+      <h2 class="panel-title">◈ 深渊祭坛</h2>
+      <div class="altar-souls">魂晶:<span id="altar-souls">0</span> 💠 <span class="dim">(击败深渊敌人获得,永久保留)</span></div>
+      <div id="altar-grid"></div>
+      <div class="panel-btns"><button class="btn" id="btn-altar-back">返回主菜单</button></div>
+    </div>
+  </div>
+
+  <!-- ============ 帮助 ============ -->
+  <div id="screen-help" class="screen hidden">
+    <div class="panel wide-panel help-panel">
+      <h2 class="panel-title">？操作与系统说明</h2>
+      <div class="help-body">
+        <h3>操作</h3>
+        <p><b>WASD / 方向键</b> 移动 · <b>鼠标</b> 瞄准 · <b>左键(按住)</b> 射击 · <b>Q</b> 主动技能 · <b>空格/Shift</b> 冲刺(短暂无敌) · <b>E</b> 拾取/互动 · <b>Tab</b> 背包与属性 · <b>Esc</b> 暂停 · <b>M</b> 音效开关 · <b>按住 Alt</b> 对比脚边装备(触屏:长按装备掉落物)。触屏设备另提供左下<b>虚拟摇杆</b>与右下<b>开火/冲刺/互动</b>按钮。</p>
+        <h3>核心循环</h3>
+        <p>每层深渊由<b>种子随机生成</b>的房间连通图构成。清空房间的怪物后门才会开启;寻找 <b>↓ 下一层</b> 入口不断深入,<b>每 5 层</b>会遇到深渊领主(Boss)。击败领主进入更深一层,难度与掉落同步提升。</p>
+        <h3>怎么找"下一层"?</h3>
+        <p>① 右上角<b>小地图</b>上的 <b>↓</b> 就是本层楼梯房;当它与你已探索的房间相邻时,小地图会亮起并脉冲提示。<br>
+        ② 屏幕上方常驻<b>目标提示</b>会写明当前该做什么。<br>
+        ③ 身边跟随的<b>绿色箭头</b>指向通往目标房间的那扇门,对应门洞会发出绿光并画出箭头。<br>
+        ④ 进入楼梯房后,房间中部会有一圈<b>绿色裂隙光圈</b>:清空房间敌人后光圈解除封印,走进去按 <b>E</b> 即可进入下一层(如果还被封印,屏幕会直接告诉你"需先清空敌人")。<br>
+        ⑤ 领主层:击败领主后原地出现<b>紫色漩涡</b>,走上去按 <b>E</b> 跃迁。</p>
+        <h3>新手引导</h3>
+        <p>首次点击"进入深渊"会自动开始<b>分步新手引导</b>(移动 / 攻击 / 冲刺 / 拾取 / 清房开门 / 下一层入口 / 词条装备),随时可按 <b>Esc</b> 或点"跳过引导"一键跳过。之后可从 <b>主菜单 → ✦ 新手引导(重看)</b> 或 <b>局内 Esc 暂停 → ✦ 新手引导(重看)</b> 重新查看。</p>
+        <h3>词条与 Build(核心系统)</h3>
+        <p>所有装备的属性都从<b>全局词条池</b>随机抽取:数值词条(+攻击/攻速/暴击/生命…)与特效词条(<b>连锁闪电/燃烧/剧毒/寒霜/环刃/湮灭/分裂/庇护/狂战/处决/奥术新星</b>…)。特效词条可跨装备<b>叠加升阶(最高 Ⅴ)</b>,组合出完全不同手感的 Build。<b>奥术新星</b>是主动技能,通过祝福或装备词条解锁后按 <b>Q</b> 释放,升阶提升伤害/范围并缩短冷却。升级三选一的<b>祝福</b>与祭坛互动也会注入词条。背包中可花费金币<b>重铸</b>装备词条,拾取新装备时可选择<b>熔合</b>进现有装备强化词条。</p>
+        <h3>稀有度</h3>
+        <p><span class="r0">破旧(1词条)</span> → <span class="r1">精良(2)</span> → <span class="r2">稀有(3)</span> → <span class="r3">史诗(4)</span> → <span class="r4">传说(5词条,必带特效)</span>。层数越深、幸运越高,掉落越好。</p>
+        <h3>死亡与魂晶 💠</h3>
+        <p>死亡后本局结束,但本局积攒的<b>魂晶</b>永久保留,可在<b>深渊祭坛</b>购买永久强化(生命/伤害/幸运/复活…)。局内进度会自动存档,可从主菜单"继续冒险"接续。</p>
+      </div>
+      <div class="panel-btns">
+        <button class="btn" id="btn-help-tut">✦ 重看新手引导</button>
+        <button class="btn" id="btn-help-back">返回</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 暂停 ============ -->
+  <div id="screen-pause" class="screen hidden">
+    <div class="panel menu-panel">
+      <h2 class="panel-title">暂停</h2>
+      <div class="pause-info" id="pause-info"></div>
+      <div class="menu-btns">
+        <button class="btn primary" id="btn-resume">继续冒险</button>
+        <button class="btn" id="btn-sfx">音效:开</button>
+        <button class="btn" id="btn-pause-tut">✦ 新手引导(重看)</button>
+        <button class="btn" id="btn-pause-help">操作说明</button>
+        <button class="btn danger" id="btn-abandon">放弃本局(结算魂晶)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 死亡结算 ============ -->
+  <div id="screen-death" class="screen hidden">
+    <div class="panel menu-panel">
+      <h2 class="panel-title death-title">你倒下了</h2>
+      <div id="death-stats"></div>
+      <div class="panel-btns">
+        <button class="btn primary" id="btn-again">再来一局</button>
+        <button class="btn" id="btn-death-altar">深渊祭坛</button>
+        <button class="btn" id="btn-death-menu">返回主菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 局内弹窗(升级/祭坛/拾取/背包) ============ -->
+  <div id="modal-root" class="modal-root hidden"></div>
+</div>
+
+<script src="js/util.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/data.js"></script>
+<script src="js/save.js"></script>
+<script src="js/loot.js"></script>
+<script src="js/mapgen.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
