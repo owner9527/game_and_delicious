@@ -14,6 +14,9 @@ _deploy.tar.gz
 _shots/
 *.log
 
+# 文档
+十款游戏修改与优化意见书.docx
+
 # Python / Node 缓存
 __pycache__/
 node_modules/
